@@ -26,10 +26,11 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'emailVerifiedAt' => $this->email_verified_at,
-            'password' => $this->password,
-            'rememberToken' => $this->remember_token,
+            'modelId' => $this->model_id,
+            'modelType' => $this->model_type,
             'primaryImage' => MediaResource::make($this->whenLoaded('media', fn() => $this->getFirstMedia('primary-image'))),
             'images' => MediaResource::collection($this->whenLoaded('media', fn() => $this->getMedia('images'))),
+            'media' => MediaResource::collection($this->whenLoaded('media')),
             'createdAt' => $this->created_at->toDateTimeString(),
             'updatedAt' => $this->updated_at->toDateTimeString(),
         ];

@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Traits\FilterQueries\UserFilterQuery;
+
 use Carbon\CarbonInterface;
-use App\Traits\HasMediaConversions;
+use Laravel\Scout\Searchable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\MediaLibrary\HasMedia;
 use Database\Factories\UserFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Sanctum\HasApiTokens;
-use Laravel\Scout\Searchable;
-use Spatie\MediaLibrary\HasMedia;
+use Mrmarchone\LaravelAutoCrud\Traits\HasMediaConversions;
 
 /**
  * @property-read int $id
@@ -29,7 +30,7 @@ use Spatie\MediaLibrary\HasMedia;
 final class User extends Authenticatable implements MustVerifyEmail , HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable , HasMediaConversions , Searchable , HasApiTokens;
+    use HasFactory, Notifiable, HasMediaConversions, Searchable, HasApiTokens, HasFactory, UserFilterQuery;
 
     protected $fillable = [
         'name',
