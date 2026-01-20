@@ -6,7 +6,7 @@ namespace App\Http\Requests\UserRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UserBulkDeleteRequest extends FormRequest
+final class UserBulkDeleteRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -21,4 +21,3 @@ class UserBulkDeleteRequest extends FormRequest
         ];
     }
 }
-

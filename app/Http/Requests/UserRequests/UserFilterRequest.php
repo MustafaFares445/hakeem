@@ -6,9 +6,8 @@ namespace App\Http\Requests\UserRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UserFilterRequest extends FormRequest
+final class UserFilterRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
@@ -18,7 +17,7 @@ class UserFilterRequest extends FormRequest
     {
         return [
             'perPage' => 'sometimes|integer|min:1|max:100',
-            'search'  => 'sometimes|string|max:255',
+            'search' => 'sometimes|string|max:255',
             'filter.name' => 'sometimes|string|max:255',
             'filter.email' => 'sometimes|email|max:255',
             'filter.emailVerifiedAt' => 'sometimes|date',

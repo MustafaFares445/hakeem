@@ -2772,12 +2772,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/MustafaFares445/laravel-auto-crud.git",
-                "reference": "35e4dd489b5f97cebdc96ca1a7fe13087a5cd6ec"
+                "reference": "b50ebceb0b2b0863fb94aa379cb357d7672742e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MustafaFares445/laravel-auto-crud/zipball/35e4dd489b5f97cebdc96ca1a7fe13087a5cd6ec",
-                "reference": "35e4dd489b5f97cebdc96ca1a7fe13087a5cd6ec",
+                "url": "https://api.github.com/repos/MustafaFares445/laravel-auto-crud/zipball/b50ebceb0b2b0863fb94aa379cb357d7672742e6",
+                "reference": "b50ebceb0b2b0863fb94aa379cb357d7672742e6",
                 "shasum": ""
             },
             "require": {
@@ -2829,7 +2829,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-09T16:51:41+00:00"
+            "time": "2026-01-11T16:18:55+00:00"
         },
         {
             "name": "myclabs/deep-copy",

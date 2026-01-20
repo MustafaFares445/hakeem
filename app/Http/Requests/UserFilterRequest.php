@@ -7,7 +7,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
-class UserFilterRequest extends FormRequest
+final class UserFilterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -41,7 +41,7 @@ class UserFilterRequest extends FormRequest
     /**
      * Prepare the data for validation.
      */
-    protected function prepareForValidation(): void
+    public function prepareForValidation(): void
     {
         $this->merge($this->convertKeysToSnakeCase($this->all()));
     }
@@ -49,7 +49,7 @@ class UserFilterRequest extends FormRequest
     /**
      * Convert request keys from camelCase to snake_case recursively.
      */
-    protected function convertKeysToSnakeCase(array $data): array
+    private function convertKeysToSnakeCase(array $data): array
     {
         $converted = [];
 

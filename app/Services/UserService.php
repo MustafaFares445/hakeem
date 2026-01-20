@@ -1,28 +1,30 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\User;
 use App\Data\UserData;
-use Mrmarchone\LaravelAutoCrud\Helpers\MediaHelper;
-use Exception;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
+use Mrmarchone\LaravelAutoCrud\Helpers\MediaHelper;
 use Throwable;
 
-class UserService
+final class UserService
 {
     /**
      * Validate user data.
      * Store to DB if there are no errors.
      *
-     * @param UserData $data
-     * @return User
      * @throws Throwable
      */
     public function store(UserData $data): User
     {
         return DB::transaction(static function () use ($data) {
-            $user = User::create($data->onlyModelAttributes());
+            $attributes = $data->onlyModelAttributes();
+            $attributes['password'] ??= str()->random(32);
+
+            $user = User::create($attributes);
 
             MediaHelper::uploadMedia($data->primaryImage, $user, 'primary-image');
             MediaHelper::uploadMedia($data->images, $user, 'images');
@@ -35,9 +37,6 @@ class UserService
      * Update user data
      * Store to DB if there are no errors.
      *
-     * @param UserData $data
-     * @param User $user
-     * @return User
      * @throws Throwable
      */
     public function update(UserData $data, User $user): User
@@ -52,4 +51,3 @@ class UserService
         });
     }
 }
-

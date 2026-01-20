@@ -6,7 +6,6 @@ namespace App\Traits\FilterQueries;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Mrmarchone\LaravelAutoCrud\Helpers\SearchTermEscaper;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -19,7 +18,7 @@ trait UserFilterQuery
             ->allowedFilters([
                 AllowedFilter::partial('name'),
                 AllowedFilter::partial('email'),
-                AllowedFilter::exact('email_verified_at'),
+                AllowedFilter::exact('emailVerifiedAt', 'email_verified_at'),
                 AllowedFilter::partial('password'),
                 AllowedFilter::partial('rememberToken', 'remember_token'),
                 AllowedFilter::scope('createdAfter'),
@@ -40,6 +39,7 @@ trait UserFilterQuery
     {
         return $query->where('created_at', '>=', $date);
     }
+
     public function scopeCreatedBefore($query, $date)
     {
         return $query->where('created_at', '<=', $date);

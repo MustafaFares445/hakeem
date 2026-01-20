@@ -1,8 +1,15 @@
 <?php
 
-Route::apiResource('/users', App\Http\Controllers\API\UserController::class);
+declare(strict_types=1);
 
-Route::apiResource('/users', App\Http\Controllers\API\UserController::class);
-Route::post('/users/bulk', [App\Http\Controllers\API\UserController::class, 'bulkStore']);
-Route::put('/users/bulk', [App\Http\Controllers\API\UserController::class, 'bulkUpdate']);
-Route::delete('/users/bulk', [App\Http\Controllers\API\UserController::class, 'bulkDestroy']);
+use App\Http\Controllers\API\UserBulkController;
+use App\Http\Controllers\API\UserController;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('users')->group(function (): void {
+    Route::post('bulk', [UserBulkController::class, 'store']);
+    Route::put('bulk', [UserBulkController::class, 'update']);
+    Route::delete('bulk', [UserBulkController::class, 'destroy']);
+});
+
+Route::apiResource('users', UserController::class)->whereNumber('user');
