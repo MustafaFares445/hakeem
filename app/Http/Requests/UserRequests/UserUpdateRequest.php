@@ -11,17 +11,16 @@ final class UserUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('update', $this->route('user')) ?? false;
     }
 
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
+            'name' => ['sometimes', 'string', 'max:255'],
+            'username' => ['sometimes', 'string', 'min:3', 'max:191', Rule::unique('users', 'username')->ignore($this->route('user'))],
             'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
-            'emailVerifiedAt' => 'sometimes|nullable|date',
-            'primaryImage' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
-            'images' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048', 'array'],
+            'primaryImage' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
         ];
     }
 }

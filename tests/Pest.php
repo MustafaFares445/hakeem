@@ -24,6 +24,29 @@ pest()->extend(TestCase::class)
 
 expect()->extend('toBeOne', fn () => $this->toBe(1));
 
+function grantUserPermissions(App\Models\User $user): void
+{
+    // Grant all user permissions for testing using Spatie Permission
+    // Use the same PermissionNameResolver as the seeder to ensure consistent naming
+    $group = 'users';
+    $actions = ['view', 'create', 'update', 'delete'];
+    $guardName = config('auth.defaults.guard', 'web');
+
+    foreach ($actions as $action) {
+        $permissionName = Mrmarchone\LaravelAutoCrud\Helpers\PermissionNameResolver::resolve($group, $action);
+        $permissionModel = Spatie\Permission\Models\Permission::firstOrCreate(
+            ['name' => $permissionName, 'guard_name' => $guardName]
+        );
+        $user->givePermissionTo($permissionModel);
+    }
+
+    // Clear permission cache to ensure permissions are immediately available
+    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+    // Reload user relationships to ensure permissions are loaded
+    $user->load('permissions');
+}
+
 function something(): void
 {
     // ..

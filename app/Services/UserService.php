@@ -7,6 +7,8 @@ namespace App\Services;
 use App\Data\UserData;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Mrmarchone\LaravelAutoCrud\Helpers\MediaHelper;
 use Throwable;
 
@@ -22,12 +24,17 @@ final class UserService
     {
         return DB::transaction(static function () use ($data) {
             $attributes = $data->onlyModelAttributes();
-            $attributes['password'] ??= str()->random(32);
-
+            
+            // Auto-generate password if not provided
+            if (empty($attributes['password'])) {
+                $attributes['password'] = Hash::make(Str::random(16));
+            } else {
+                $attributes['password'] = Hash::make($attributes['password']);
+            }
+            
             $user = User::create($attributes);
 
             MediaHelper::uploadMedia($data->primaryImage, $user, 'primary-image');
-            MediaHelper::uploadMedia($data->images, $user, 'images');
 
             return $user;
         });
@@ -45,7 +52,6 @@ final class UserService
             tap($user)->update($data->onlyModelAttributes());
 
             MediaHelper::updateMedia($data->primaryImage, $user, 'primary-image');
-            MediaHelper::updateMedia($data->images, $user, 'images');
 
             return $user;
         });

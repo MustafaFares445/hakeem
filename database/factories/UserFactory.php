@@ -20,9 +20,10 @@ final class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'username' => fake()->username(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => fake()->optional()->dateTime(),
-            'password' => 'password',
+            'email_verified_at' => fake()->dateTime(),
+            'password' => bcrypt('secret'),
         ];
     }
 }

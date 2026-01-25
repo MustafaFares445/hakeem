@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\User;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
@@ -23,6 +27,14 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->bootModelsDefaults();
+
+        Gate::define('attempt-login', static function (User $user, string $password): bool {
+            if (! Hash::check($password, $user->password)) {
+                throw new AuthenticationException(__('Invalid credentials.'));
+            }
+
+            return true;
+        });
     }
 
     private function bootModelsDefaults(): void

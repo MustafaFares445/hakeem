@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\API\UserBulkController;
-use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\AuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('users')->group(function (): void {
-    Route::post('bulk', [UserBulkController::class, 'store']);
-    Route::put('bulk', [UserBulkController::class, 'update']);
-    Route::delete('bulk', [UserBulkController::class, 'destroy']);
+Route::prefix('auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/forget-password', [AuthController::class, 'forgotPassword']);
 });
 
-Route::apiResource('users', UserController::class)->whereNumber('user');
+Route::apiResource('/users', App\Http\Controllers\API\UserController::class);

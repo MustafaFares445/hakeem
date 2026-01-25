@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\UserRequests;
+namespace App\Http\Requests\AuthRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-final class UserBulkDeleteRequest extends FormRequest
+final class ForgotPasswordRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,8 +16,7 @@ final class UserBulkDeleteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ids' => 'required|array',
-            'ids.*' => 'required|integer|exists:users,id',
+            'email' => ['required', 'email', 'exists:users,email'],
         ];
     }
 }
