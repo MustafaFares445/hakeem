@@ -14,7 +14,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chronic_medications', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignId('patient_id')->constrained('patients')->cascadeOnDelete();
+            $table->longtext('title');
             $table->timestamps();
         });
     }

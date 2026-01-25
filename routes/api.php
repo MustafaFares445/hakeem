@@ -15,3 +15,7 @@ Route::prefix('users')->group(function (): void {
 Route::apiResource('users', UserController::class)->whereNumber('user');
 
 Route::apiResource('/patients', App\Http\Controllers\API\PatientController::class);
+
+Route::apiResource('/chronic_diseases', App\Http\Controllers\API\ChronicDiseasesController::class)->parameters([
+    'chronic_diseases' => 'chronicDisease',
+]);
