@@ -28,9 +28,9 @@ final class UserData extends Data
         public ?string $username,
         #[Max(255), Unique('users', 'email')]
         public ?string $email,
-        public ?string $password,
-        #[Date]
+        /** @var array<string>|null */
+        public ?array $roles = null,
         #[File]
-        public ?UploadedFile $primaryImage,
+        public ?UploadedFile $primaryImage = null,
     ) {}
 }

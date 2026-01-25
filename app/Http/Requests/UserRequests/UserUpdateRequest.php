@@ -20,6 +20,8 @@ final class UserUpdateRequest extends FormRequest
             'name' => ['sometimes', 'string', 'max:255'],
             'username' => ['sometimes', 'string', 'min:3', 'max:191', Rule::unique('users', 'username')->ignore($this->route('user'))],
             'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
+            'roles' => ['sometimes', 'nullable', 'array'],
+            'roles.*' => ['string', Rule::exists('roles', 'name')],
             'primaryImage' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
         ];
     }

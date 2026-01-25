@@ -48,7 +48,7 @@ final class UserController
     {
         $user = $this->userService->store(UserData::from($request->validated()));
 
-        return UserResource::make($user->load('media'))
+        return UserResource::make($user->load(['media', 'roles']))
             ->additional(['message' => ResponseMessages::CREATED->message()])
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
@@ -61,7 +61,7 @@ final class UserController
     {
         $this->authorize('view', $user);
 
-        return UserResource::make($user->load('media'))
+        return UserResource::make($user->load(['media', 'roles']))
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
@@ -74,7 +74,7 @@ final class UserController
     {
         $updatedUser = $this->userService->update(UserData::from($request->validated()), $user);
 
-        return UserResource::make($updatedUser->load('media'))
+        return UserResource::make($updatedUser->load(['media', 'roles']))
             ->additional(['message' => ResponseMessages::UPDATED->message()]);
     }
 
