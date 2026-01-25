@@ -13,3 +13,5 @@ Route::prefix('users')->group(function (): void {
 });
 
 Route::apiResource('users', UserController::class)->whereNumber('user');
+
+Route::apiResource('/patients', App\Http\Controllers\API\PatientController::class);
