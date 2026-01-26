@@ -31,7 +31,7 @@ it('paginates users with custom per page', function () {
     User::factory()->count(15)->create();
 
     // Act
-    $response = $this->getJson('/api/users?per_page=5');
+    $response = $this->getJson('/api/users?perPage=5');
 
     // Assert
     $response->assertOk();

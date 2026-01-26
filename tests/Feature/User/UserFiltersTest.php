@@ -77,7 +77,6 @@ it('filters users by email', function () {
     expect($response->json('data'))->toHaveCount(1);
 });
 
-
 it('filters users by date range', function () {
     // Create users outside the date range
     User::factory()->create(['created_at' => now()->subDays(5)]);
@@ -101,7 +100,7 @@ it('filters users by date range', function () {
 it('paginates filtered users', function () {
     User::factory()->count(15)->create();
 
-    $response = $this->getJson('/api/users?per_page=5&page=1');
+    $response = $this->getJson('/api/users?perPage=5&page=1');
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(5);

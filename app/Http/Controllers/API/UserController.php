@@ -32,8 +32,9 @@ final class UserController
     public function index(UserFilterRequest $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', User::class);
+
         $users = User::getQuery()
-            ->paginate($request->input('per_page', $request->input('perPage', 20)));
+            ->paginate($request->input('perPage', 20));
 
         return UserResource::collection($users)
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
@@ -46,6 +47,8 @@ final class UserController
      */
     public function store(UserStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', User::class);
+
         $user = $this->userService->store(UserData::from($request->validated()));
 
         return UserResource::make($user->load(['media', 'roles']))
@@ -72,6 +75,8 @@ final class UserController
      */
     public function update(UserUpdateRequest $request, User $user): UserResource
     {
+        $this->authorize('update', $user);
+
         $updatedUser = $this->userService->update(UserData::from($request->validated()), $user);
 
         return UserResource::make($updatedUser->load(['media', 'roles']))
@@ -84,6 +89,7 @@ final class UserController
     public function destroy(User $user): UserResource
     {
         $this->authorize('delete', $user);
+
         $user->delete();
 
         return UserResource::make($user)

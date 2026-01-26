@@ -31,6 +31,7 @@ it('forbids unauthorized user from creating user', function () {
     $payload = [
         'name' => 'Sample name',
         'email' => 'test@example.com',
+        'username' => 'testuser',
     ];
 
     // Act
@@ -49,6 +50,7 @@ it('forbids unauthorized user from updating user', function () {
     $payload = [
         'name' => 'Sample name',
         'email' => 'test@example.com',
+        'username' => 'testuser',
     ];
 
     // Act

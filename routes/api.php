@@ -12,4 +12,4 @@ Route::prefix('auth')->group(function () {
     Route::post('/forget-password', [AuthController::class, 'forgotPassword']);
 });
 
-Route::apiResource('/users', App\Http\Controllers\API\UserController::class);
+Route::apiResource('/users', App\Http\Controllers\API\UserController::class)->middleware('auth:sanctum');

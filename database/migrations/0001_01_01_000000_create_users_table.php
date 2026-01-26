@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('phone_number')->unique()->nullable();
             $table->string('username')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->foreignId('tenant_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->nullOnDelete();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
