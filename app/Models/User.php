@@ -40,6 +40,7 @@ final class User extends Authenticatable implements HasMedia, MustVerifyEmail
         'username',
         'email',
         'phone_number',
+        'tenant_id'
     ];
 
     /**
