@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Mrmarchone\LaravelAutoCrud\Traits\HasModelAttributes;
 use Spatie\LaravelData\Attributes\Validation\Date;
-use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\File;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Unique;
@@ -25,18 +24,13 @@ final class UserData extends Data
     public function __construct(
         #[Max(255)]
         public ?string $name,
+        #[Max(191), Unique('users', 'username')]
+        public ?string $username,
         #[Max(255), Unique('users', 'email')]
         public ?string $email,
-        #[Date]
-        public ?Carbon $emailVerifiedAt,
-        #[Max(255)]
-        public ?string $password,
+        /** @var array<string>|null */
+        public ?array $roles = null,
         #[File]
-        public ?UploadedFile $primaryImage,
-        #[File]
-        public ?array $images,
-        #[Exists('media', 'id')]
-        public ?int $modelId,
-        public ?string $modelType
+        public ?UploadedFile $primaryImage = null,
     ) {}
 }

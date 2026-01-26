@@ -11,6 +11,7 @@ use App\Http\Requests\UserRequests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
@@ -19,15 +20,21 @@ use Throwable;
 
 final class UserController
 {
+    use AuthorizesRequests;
+
     public function __construct(private UserService $userService) {}
 
     /**
      * Get a paginated list of users with optional filtering.
+     *
+     * @return {{ AnonymousResourceCollection<resource> }}
      */
     public function index(UserFilterRequest $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', User::class);
+
         $users = User::getQuery()
-            ->paginate($request->get('perPage', 20));
+            ->paginate($request->input('perPage', 20));
 
         return UserResource::collection($users)
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
@@ -40,9 +47,11 @@ final class UserController
      */
     public function store(UserStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', User::class);
+
         $user = $this->userService->store(UserData::from($request->validated()));
 
-        return UserResource::make($user->load('media', 'media'))
+        return UserResource::make($user->load(['media', 'roles']))
             ->additional(['message' => ResponseMessages::CREATED->message()])
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
@@ -53,7 +62,9 @@ final class UserController
      */
     public function show(User $user): UserResource
     {
-        return UserResource::make($user->load('media'))
+        $this->authorize('view', $user);
+
+        return UserResource::make($user->load(['media', 'roles']))
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
@@ -64,9 +75,11 @@ final class UserController
      */
     public function update(UserUpdateRequest $request, User $user): UserResource
     {
+        $this->authorize('update', $user);
+
         $updatedUser = $this->userService->update(UserData::from($request->validated()), $user);
 
-        return UserResource::make($updatedUser->load('media', 'media'))
+        return UserResource::make($updatedUser->load(['media', 'roles']))
             ->additional(['message' => ResponseMessages::UPDATED->message()]);
     }
 
@@ -75,6 +88,8 @@ final class UserController
      */
     public function destroy(User $user): UserResource
     {
+        $this->authorize('delete', $user);
+
         $user->delete();
 
         return UserResource::make($user)

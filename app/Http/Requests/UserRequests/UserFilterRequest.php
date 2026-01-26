@@ -20,11 +20,10 @@ final class UserFilterRequest extends FormRequest
             'search' => 'sometimes|string|max:255',
             'filter.name' => 'sometimes|string|max:255',
             'filter.email' => 'sometimes|email|max:255',
-            'filter.emailVerifiedAt' => 'sometimes|date',
             'filter.createdAfter' => 'sometimes|date',
             'filter.createdBefore' => 'sometimes|date|after_or_equal:filter.createdAfter',
             'filter.search' => 'sometimes|string|max:255',
-            'sort' => 'sometimes|string|in:name,-name,email,-email,emailVerifiedAt,-emailVerifiedAt',
+            'sort' => 'sometimes|string|in:name,-name,email,-email',
         ];
     }
 }

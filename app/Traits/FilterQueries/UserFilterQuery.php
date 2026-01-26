@@ -6,6 +6,7 @@ namespace App\Traits\FilterQueries;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Mrmarchone\LaravelAutoCrud\Helpers\SearchTermEscaper;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -18,9 +19,6 @@ trait UserFilterQuery
             ->allowedFilters([
                 AllowedFilter::partial('name'),
                 AllowedFilter::partial('email'),
-                AllowedFilter::exact('emailVerifiedAt', 'email_verified_at'),
-                AllowedFilter::partial('password'),
-                AllowedFilter::partial('rememberToken', 'remember_token'),
                 AllowedFilter::scope('createdAfter'),
                 AllowedFilter::scope('createdBefore'),
                 AllowedFilter::scope('search'),
@@ -28,9 +26,6 @@ trait UserFilterQuery
             ->allowedSorts([
                 AllowedSort::field('name'),
                 AllowedSort::field('email'),
-                AllowedSort::field('emailVerifiedAt', 'email_verified_at'),
-                AllowedSort::field('password'),
-                AllowedSort::field('rememberToken', 'remember_token'),
             ])
             ->defaultSort('-created_at');
     }
@@ -51,11 +46,11 @@ trait UserFilterQuery
             return $query;
         }
 
-        $userIds = User::search($search)->keys();
+        $likeTerm = SearchTermEscaper::escape($search);
 
-        return $query->when(
-            $userIds->isNotEmpty(),
-            fn (Builder $q) => $q->whereIn('id', $userIds)
-        );
+        return $query->where(function (Builder $q) use ($likeTerm) {
+            $q->whereRaw("name LIKE ? ESCAPE '!'", [$likeTerm])
+                ->orWhereRaw("email LIKE ? ESCAPE '!'", [$likeTerm]);
+        });
     }
 }
