@@ -6,5 +6,8 @@ namespace App\Enums;
 
 enum PermissionGroup: string
 {
+    case CHRONIC_DISEASES = 'chronic_diseases';
+    case CHRONIC_MEDICATIONS = 'chronic_medications';
+    case PATIENT = 'patients';
     case USER = 'users';
 }
