@@ -32,5 +32,7 @@ final class UserData extends Data
         public ?array $roles = null,
         #[File]
         public ?UploadedFile $primaryImage = null,
+        #[Max(255)]
+        public ?string $password
     ) {}
 }

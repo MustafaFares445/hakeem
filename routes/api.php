@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\ChronicDiseasesController;
+use App\Http\Controllers\API\ChronicMedicationsController;
+use App\Http\Controllers\API\PatientController;
+use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -12,15 +16,13 @@ Route::prefix('auth')->group(function () {
     Route::post('/forget-password', [AuthController::class, 'forgotPassword']);
 });
 
-Route::apiResource('/users', App\Http\Controllers\API\UserController::class)->middleware('auth:sanctum');
-Route::apiResource('users', UserController::class)->whereNumber('user');
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('/users', UserController::class);
 
-Route::apiResource('/patients', App\Http\Controllers\API\PatientController::class);
+    Route::apiResource('/patients', PatientController::class);
 
-Route::apiResource('/chronic_diseases', App\Http\Controllers\API\ChronicDiseasesController::class)->parameters([
-    'chronic_diseases' => 'chronicDisease',
-]);
+    Route::apiResource('/chronic_diseases', ChronicDiseasesController::class);
 
-Route::apiResource('/chronic_medications', App\Http\Controllers\API\ChronicMedicationsController::class)->parameters([
-    'chronic_medications' => 'chronicMedication',
-]);
+    Route::apiResource('/chronic_medications', ChronicMedicationsController::class);
+});
+

@@ -13,8 +13,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('patients', function (Blueprint $table) {
+        Schema::create('patients', static function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('tenant_id')->constrained('tenants');
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->string('phone_number')->unique();

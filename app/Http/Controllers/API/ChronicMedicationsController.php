@@ -17,22 +17,21 @@ use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-final class ChronicMedicationsController
+final readonly class ChronicMedicationsController
 {
     public function __construct(private ChronicMedicationsService $chronicMedicationsService) {}
 
     /**
      * Get a paginated list of chronic_medications with optional filtering.
      *
-     * @return ChronicMedicationsResource
+     * @return AnonymousResourceCollection<ChronicMedications>
      */
     public function index(ChronicMedicationsFilterRequest $request): AnonymousResourceCollection
     {
-        $perPage = $request->get('perPage') ?? $request->get('per_page', 20);
-        $chronicMedicationss = ChronicMedications::getQuery()
-            ->paginate($perPage);
+        $chronicMedications = ChronicMedications::getQuery()
+            ->paginate($request->input('perPage', 20));
 
-        return ChronicMedicationsResource::collection($chronicMedicationss)
+        return ChronicMedicationsResource::collection($chronicMedications)
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
@@ -75,15 +74,10 @@ final class ChronicMedicationsController
 
     /**
      * Delete a chronicMedications.
-     *
-     * @param  ChronicMedications  $chronicMedications
      */
     public function destroy(ChronicMedications $chronicMedication): ChronicMedicationsResource
     {
-        $id = $chronicMedication->id;
         $chronicMedication->delete();
-
-        $chronicMedication->id = $id;
 
         return ChronicMedicationsResource::make($chronicMedication)
             ->additional(['message' => ResponseMessages::DELETED->message()]);

@@ -2,11 +2,20 @@
 
 declare(strict_types=1);
 
+use App\Enums\RoleEnum;
+use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(function () {
-    $user = User::factory()->create();
+beforeEach(/**
+ * @throws JsonException
+ * @throws TenantCouldNotBeIdentifiedById
+ */ function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $tenant = Tenant::factory()->create();
+    tenancy()->initialize($tenant);
+    $user = User::factory()->create(['tenant_id' => $tenant->id]);
     Sanctum::actingAs($user);
 });
 
@@ -32,6 +41,7 @@ it('forbids unauthorized user from creating user', function () {
         'name' => 'Sample name',
         'email' => 'test@example.com',
         'username' => 'testuser',
+        'roles' => [RoleEnum::cases()[0]->value,]
     ];
 
     // Act
@@ -51,6 +61,7 @@ it('forbids unauthorized user from updating user', function () {
         'name' => 'Sample name',
         'email' => 'test@example.com',
         'username' => 'testuser',
+        'roles' => [RoleEnum::cases()[0]->value,]
     ];
 
     // Act

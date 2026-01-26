@@ -13,9 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('chronic_medications', function (Blueprint $table) {
+        Schema::create('chronic_medications', static function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('patient_id')->constrained('patients')->cascadeOnDelete();
+            $table->foreignUuid('patient_id')->constrained('patients')->cascadeOnDelete();
+            $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->longtext('title');
             $table->timestamps();
         });

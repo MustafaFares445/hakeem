@@ -20,16 +20,7 @@ final class ChronicDiseasesService
     public function store(ChronicDiseasesData $data): ChronicDiseases
     {
         return DB::transaction(static function () use ($data) {
-            $attributes = [];
-            if (isset($data->patientId) && $data->patientId !== null) {
-                $attributes['patient_id'] = $data->patientId;
-            }
-            if (isset($data->title) && $data->title !== null) {
-                $attributes['title'] = $data->title;
-            }
-            $chronicDiseases = ChronicDiseases::create($attributes);
-
-            return $chronicDiseases;
+            return ChronicDiseases::create($data->onlyModelAttributes());
         });
     }
 
@@ -42,14 +33,8 @@ final class ChronicDiseasesService
     public function update(ChronicDiseasesData $data, ChronicDiseases $chronicDiseases): ChronicDiseases
     {
         return DB::transaction(static function () use ($data, $chronicDiseases) {
-            $attributes = [];
-            if ($data->patientId !== null) {
-                $attributes['patient_id'] = $data->patientId;
-            }
-            if ($data->title !== null) {
-                $attributes['title'] = $data->title;
-            }
-            tap($chronicDiseases)->update($attributes);
+
+            tap($chronicDiseases)->update($data->onlyModelAttributes());
 
             return $chronicDiseases;
         });

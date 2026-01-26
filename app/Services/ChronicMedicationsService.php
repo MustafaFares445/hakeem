@@ -20,16 +20,7 @@ final class ChronicMedicationsService
     public function store(ChronicMedicationsData $data): ChronicMedications
     {
         return DB::transaction(static function () use ($data) {
-            $attributes = [];
-            if ($data->patientId !== null) {
-                $attributes['patient_id'] = $data->patientId;
-            }
-            if ($data->title !== null) {
-                $attributes['title'] = $data->title;
-            }
-            $chronicMedications = ChronicMedications::create($attributes);
-
-            return $chronicMedications;
+            return ChronicMedications::create($data->onlyModelAttributes());
         });
     }
 
@@ -42,14 +33,7 @@ final class ChronicMedicationsService
     public function update(ChronicMedicationsData $data, ChronicMedications $chronicMedications): ChronicMedications
     {
         return DB::transaction(static function () use ($data, $chronicMedications) {
-            $attributes = [];
-            if ($data->patientId !== null) {
-                $attributes['patient_id'] = $data->patientId;
-            }
-            if ($data->title !== null) {
-                $attributes['title'] = $data->title;
-            }
-            tap($chronicMedications)->update($attributes);
+            tap($chronicMedications)->update($data->onlyModelAttributes());
 
             return $chronicMedications;
         });

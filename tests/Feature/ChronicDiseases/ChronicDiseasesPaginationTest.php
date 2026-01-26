@@ -3,11 +3,20 @@
 declare(strict_types=1);
 
 use App\Models\ChronicDiseases;
+use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(function () {
-    $user = User::factory()->create();
+beforeEach(/**
+ * @throws JsonException
+ * @throws TenantCouldNotBeIdentifiedById
+ */ function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $tenant = Tenant::factory()->create();
+    tenancy()->initialize($tenant);
+    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    grantPermissions($user, 'chronic_diseases');
     Sanctum::actingAs($user);
 });
 
@@ -31,7 +40,7 @@ it('paginates chronic diseases with custom per page', function () {
     ChronicDiseases::factory()->count(15)->create();
 
     // Act
-    $response = $this->getJson('/api/chronic_diseases?per_page=5');
+    $response = $this->getJson('/api/chronic_diseases?perPage=5');
 
     // Assert
     $response->assertOk();

@@ -24,22 +24,9 @@ final class UserService
     public function store(UserData $data): User
     {
         return DB::transaction(static function () use ($data) {
-            $attributes = $data->onlyModelAttributes();
+            $user = User::create($data->onlyModelAttributes() + ['password' => Hash::make($data->password ?? Str::random(12))]);
 
-            // Auto-generate password if not provided
-            if (empty($attributes['password'])) {
-                $attributes['password'] = Hash::make(Str::random(16));
-            } else {
-                $attributes['password'] = Hash::make($attributes['password']);
-            }
-
-            $user = User::create($attributes);
-
-            // Assign roles if provided
-            if (! empty($data->roles)) {
-                $roles = Role::whereIn('name', $data->roles)->get();
-                $user->syncRoles($roles);
-            }
+            $user->assignRole($data->roles);
 
             MediaHelper::uploadMedia($data->primaryImage, $user, 'primary-image');
 
@@ -58,14 +45,8 @@ final class UserService
         return DB::transaction(static function () use ($data, $user) {
             tap($user)->update($data->onlyModelAttributes());
 
-            // Sync roles if provided
-            if ($data->roles !== null) {
-                if (empty($data->roles)) {
-                    $user->syncRoles([]);
-                } else {
-                    $roles = Role::whereIn('name', $data->roles)->get();
-                    $user->syncRoles($roles);
-                }
+            if ($data->roles) {
+                $user->syncRoles($data->roles);
             }
 
             MediaHelper::updateMedia($data->primaryImage, $user, 'primary-image');

@@ -4,17 +4,25 @@ declare(strict_types=1);
 
 use App\Enums\PatientGenderEnum;
 use App\Models\Patient;
+use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(function () {
-    $user = User::factory()->create();
+beforeEach(/**
+ * @throws JsonException
+ * @throws TenantCouldNotBeIdentifiedById
+ */ function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $tenant = Tenant::factory()->create();
+    tenancy()->initialize($tenant);
+    $user = User::factory()->create(['tenant_id' => $tenant->id]);
     Sanctum::actingAs($user);
 });
 
 it('forbids unauthorized user from viewing patients', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => tenant('id')]);
     Patient::factory()->create();
     Sanctum::actingAs($user);
 
@@ -22,12 +30,12 @@ it('forbids unauthorized user from viewing patients', function () {
     $response = $this->getJson('/api/patients');
 
     // Assert
-    $response->assertOk();
+    $response->assertForbidden();
 });
 
 it('forbids unauthorized user from creating patient', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => tenant('id')]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -46,12 +54,12 @@ it('forbids unauthorized user from creating patient', function () {
     $response = $this->postJson('/api/patients', $payload);
 
     // Assert
-    $response->assertCreated();
+    $response->assertForbidden();
 });
 
 it('forbids unauthorized user from updating patient', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => tenant('id')]);
     $model = Patient::factory()->create();
     Sanctum::actingAs($user);
 
@@ -71,12 +79,12 @@ it('forbids unauthorized user from updating patient', function () {
     $response = $this->putJson('/api/patients/'.$model->id, $payload);
 
     // Assert
-    $response->assertOk();
+    $response->assertForbidden();
 });
 
 it('forbids unauthorized user from deleting patient', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => tenant('id')]);
     $model = Patient::factory()->create();
     Sanctum::actingAs($user);
 
@@ -84,5 +92,5 @@ it('forbids unauthorized user from deleting patient', function () {
     $response = $this->deleteJson('/api/patients/'.$model->id);
 
     // Assert
-    $response->assertOk();
+    $response->assertForbidden();
 });

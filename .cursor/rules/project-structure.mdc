@@ -1,0 +1,93 @@
+---
+alwaysApply: true
+---
+<project-structure>
+# Hakeem Project Structure Rules
+
+## Architecture
+- Laravel 12 REST API with Sanctum auth and Stancl Tenancy.
+- Service layer for business logic; controllers stay thin.
+- Spatie Data DTOs for request payloads and validation attributes.
+- Spatie Query Builder for filtering, sorting, and pagination.
+- Spatie Permission for roles and permissions.
+- Spatie Media Library for file uploads.
+
+## Repository Layout
+- `app/`
+  - `Data/` and `Data/Auth/` for Spatie Data DTOs.
+  - `Enums/` for PHP enums (TitleCase cases).
+  - `Http/Controllers/API/` for REST API controllers.
+  - `Http/Requests/{Domain}Requests/` for Form Requests.
+  - `Http/Resources/` for API resources (camelCase output).
+  - `Models/` and `Models/Scopes/` for Eloquent models and global scopes.
+  - `Policies/` for authorization.
+  - `Services/` for business logic and transactions.
+  - `Traits/FilterQueries/` for Query Builder traits per model.
+- `database/`
+  - `factories/` for model factories.
+  - `migrations/` for schema changes.
+  - `seeders/` and `seeders/Permissions/` for roles/permissions seeding.
+- `routes/`
+  - `api.php` defines `Route::apiResource()` endpoints under `auth:sanctum`.
+- `tests/`
+  - `Feature/{Domain}/` contains endpoint, validation, auth, filters, pagination, edge cases.
+  - `Unit/` contains isolated tests.
+
+## Naming Conventions
+- Controller: `{Model}Controller` (final readonly).
+- Service: `{Model}Service` (final).
+- Data DTO: `{Model}Data` (final).
+- Resource: `{Model}Resource` (final).
+- Policy: `{Model}Policy` (final).
+- Requests: `{Model}StoreRequest`, `{Model}UpdateRequest`, `{Model}FilterRequest` (final).
+- Filter trait: `{Model}FilterQuery`.
+- Factory: `{Model}Factory` (final).
+- Enum: `{Domain}{Property}Enum` with TitleCase cases.
+
+## API and Controller Patterns
+- Routes use `Route::apiResource()` inside `auth:sanctum` middleware.
+- Controllers use `AuthorizesRequests` and authorize via policies.
+- Controller actions return `Resource::collection(...)` or `Resource::make(...)`.
+- API responses add `ResponseMessages::*->message()` to `message` key.
+
+## Service Patterns
+- Use `DB::transaction()` for create/update operations.
+- Data DTOs use `HasModelAttributes` and `onlyModelAttributes()` for persistence.
+- Media uploads go through MediaHelper helpers.
+
+## Model Patterns
+- Models are `final` and use `HasUuids`, `BelongsToTenant`, and filter traits.
+- Fillable attributes use snake_case column names.
+- Relationships use Eloquent relation return types.
+
+## Filtering and Sorting
+- Each model has a `Traits/FilterQueries/{Model}FilterQuery` trait.
+- Queries use `QueryBuilder::for(Model::class)` with `allowedFilters`, `allowedSorts`.
+- Default sort uses `-created_at`.
+- Search scopes escape terms before `LIKE`.
+
+## Data and Resource Mapping
+- External API payloads use camelCase keys.
+- Database columns stay snake_case.
+- Resources map snake_case columns to camelCase response keys.
+
+## Testing Patterns
+- Pest tests with `RefreshDatabase` are configured in `tests/Pest.php`.
+- Feature tests are grouped by domain in `tests/Feature/{Domain}/`.
+- Common scenarios: endpoints, validation, authorization, filters, pagination, edge cases.
+- Use factories with explicit attributes when it improves clarity.
+
+## CRUD Workflow for New Domains
+1. Create migration, model, factory, and seeder entries if needed.
+2. Add enum(s) to `app/Enums` when domain values are fixed.
+3. Create Data DTO in `app/Data`.
+4. Create Form Requests in `app/Http/Requests/{Domain}Requests/`.
+5. Add Resource in `app/Http/Resources/`.
+6. Add Policy in `app/Policies/`.
+7. Add Service in `app/Services/`.
+8. Add API Controller in `app/Http/Controllers/API/`.
+9. Add filter trait in `app/Traits/FilterQueries/` and wire to model.
+10. Add `Route::apiResource()` to `routes/api.php`.
+11. Add permissions in `database/seeders/Permissions/` and include in main seeder.
+12. Add feature tests under `tests/Feature/{Domain}/`.
+</project-structure>

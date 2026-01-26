@@ -21,6 +21,7 @@ final class PatientService
     public function store(PatientData $data): Patient
     {
         return DB::transaction(static function () use ($data) {
+
             $patient = Patient::create($data->onlyModelAttributes());
 
             MediaHelper::uploadMedia($data->primaryImage, $patient, 'primary-image');

@@ -8,18 +8,15 @@ use App\Traits\FilterQueries\ChronicMedicationsFilterQuery;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 final class ChronicMedications extends Model
 {
-    use ChronicMedicationsFilterQuery, HasFactory, HasUuids;
+    use BelongsToTenant, ChronicMedicationsFilterQuery, HasFactory , HasUuids;
 
     protected $fillable = [
         'patient_id',
+        'tenant_id',
         'title',
     ];
-
-    public function resolveRouteBinding($value, $field = null)
-    {
-        return $this->where($field ?? $this->getRouteKeyName(), $value)->firstOrFail();
-    }
 }

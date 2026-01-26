@@ -3,13 +3,21 @@
 declare(strict_types=1);
 
 use App\Models\ChronicMedications;
+use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(function () {
-    $user = User::factory()->create();
-    // Assuming the first user gets all permissions from seeder or similar logic
+beforeEach(/**
+ * @throws JsonException
+ * @throws TenantCouldNotBeIdentifiedById
+ */ function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $tenant = Tenant::factory()->create();
+    tenancy()->initialize($tenant);
+    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    grantPermissions($user, 'chronic_medications');
     Sanctum::actingAs($user);
 });
 

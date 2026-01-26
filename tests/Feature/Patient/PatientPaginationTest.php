@@ -3,11 +3,20 @@
 declare(strict_types=1);
 
 use App\Models\Patient;
+use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(function () {
-    $user = User::factory()->create();
+beforeEach(/**
+ * @throws JsonException
+ * @throws TenantCouldNotBeIdentifiedById
+ */ function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $tenant = Tenant::factory()->create();
+    tenancy()->initialize($tenant);
+    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    grantPermissions($user, 'patients');
     Sanctum::actingAs($user);
 });
 
@@ -31,7 +40,7 @@ it('paginates patients with custom per page', function () {
     Patient::factory()->count(15)->create();
 
     // Act
-    $response = $this->getJson('/api/patients?per_page=5');
+    $response = $this->getJson('/api/patients?perPage=5');
 
     // Assert
     $response->assertOk();

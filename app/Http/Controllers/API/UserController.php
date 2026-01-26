@@ -18,7 +18,7 @@ use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-final class UserController
+final readonly class UserController
 {
     use AuthorizesRequests;
 
@@ -27,7 +27,7 @@ final class UserController
     /**
      * Get a paginated list of users with optional filtering.
      *
-     * @return {{ AnonymousResourceCollection<resource> }}
+     * @return AnonymousResourceCollection<UserResource>
      */
     public function index(UserFilterRequest $request): AnonymousResourceCollection
     {

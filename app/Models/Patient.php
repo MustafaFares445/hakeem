@@ -8,12 +8,14 @@ use App\Traits\FilterQueries\PatientFilterQuery;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Mrmarchone\LaravelAutoCrud\Traits\HasMediaConversions;
 use Spatie\MediaLibrary\HasMedia;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 final class Patient extends Model implements HasMedia
 {
-    use HasFactory, HasMediaConversions, HasUuids, PatientFilterQuery;
+    use BelongsToTenant, HasFactory, HasMediaConversions, HasUuids , PatientFilterQuery;
 
     protected $fillable = [
         'name',
@@ -26,4 +28,14 @@ final class Patient extends Model implements HasMedia
         'registration_date',
         'notes',
     ];
+
+    public function chronicDiseases(): HasMany
+    {
+        return $this->hasMany(ChronicDiseases::class);
+    }
+
+    public function chronicMedications(): HasMany
+    {
+        return $this->hasMany(ChronicMedications::class);
+    }
 }

@@ -3,11 +3,20 @@
 declare(strict_types=1);
 
 use App\Models\ChronicMedications;
+use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(function () {
-    $user = User::factory()->create();
+beforeEach(/**
+ * @throws JsonException
+ * @throws TenantCouldNotBeIdentifiedById
+ */ function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $tenant = Tenant::factory()->create();
+    tenancy()->initialize($tenant);
+    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    grantPermissions($user, 'chronic_medications');
     Sanctum::actingAs($user);
 });
 
@@ -73,7 +82,7 @@ it('filters chronic medications by date range', function () {
 it('paginates filtered chronic medications', function () {
     ChronicMedications::factory()->count(15)->create();
 
-    $response = $this->getJson('/api/chronic_medications?per_page=5&page=1');
+    $response = $this->getJson('/api/chronic_medications?perPage=5&page=1');
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(5);

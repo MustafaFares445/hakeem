@@ -11,26 +11,30 @@ use App\Http\Requests\PatientRequests\PatientUpdateRequest;
 use App\Http\Resources\PatientResource;
 use App\Models\Patient;
 use App\Services\PatientService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-final class PatientController
+final readonly class PatientController
 {
+    use AuthorizesRequests;
+
     public function __construct(private PatientService $patientService) {}
 
     /**
      * Get a paginated list of patients with optional filtering.
      *
-     * @return PatientResource
+     * @return AnonymousResourceCollection<PatientResource>
      */
     public function index(PatientFilterRequest $request): AnonymousResourceCollection
     {
-        $perPage = $request->get('perPage') ?? $request->get('per_page', 20);
+        $this->authorize('viewAny', Patient::class);
+
         $patients = Patient::getQuery()
-            ->paginate($perPage);
+            ->paginate($request->input('perPage', 20));
 
         return PatientResource::collection($patients)
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
@@ -43,6 +47,8 @@ final class PatientController
      */
     public function store(PatientStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', Patient::class);
+
         $patient = $this->patientService->store(PatientData::from($request->validated()));
 
         return PatientResource::make($patient->load('media'))
@@ -56,6 +62,8 @@ final class PatientController
      */
     public function show(Patient $patient): PatientResource
     {
+        $this->authorize('view', $patient);
+
         return PatientResource::make($patient->load('media'))
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
@@ -67,6 +75,8 @@ final class PatientController
      */
     public function update(PatientUpdateRequest $request, Patient $patient): PatientResource
     {
+        $this->authorize('update', $patient);
+
         $updatedPatient = $this->patientService->update(PatientData::from($request->validated()), $patient);
 
         return PatientResource::make($updatedPatient->load('media'))
@@ -78,6 +88,8 @@ final class PatientController
      */
     public function destroy(Patient $patient): PatientResource
     {
+        $this->authorize('delete', $patient);
+
         $patient->delete();
 
         return PatientResource::make($patient)

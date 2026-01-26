@@ -2,12 +2,21 @@
 
 declare(strict_types=1);
 
+use App\Enums\RoleEnum;
+use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(function () {
-    $user = User::factory()->create();
+beforeEach(/**
+ * @throws JsonException
+ * @throws TenantCouldNotBeIdentifiedById
+ */ function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+    $tenant = Tenant::factory()->create();
+    tenancy()->initialize($tenant);
+    $user = User::factory()->create(['tenant_id' => $tenant->id]);
     grantUserPermissions($user);
     Sanctum::actingAs($user);
 });
@@ -34,6 +43,8 @@ it('creates a user', function () {
         'name' => 'Sample name',
         'username' => 'testuser',
         'email' => 'test@example.com',
+        'password' => 'password',
+        'roles' => [RoleEnum::cases()[0]->value]
     ];
 
     $response = $this->postJson('/api/users', $payload);
@@ -67,6 +78,7 @@ it('updates a user', function () {
         'name' => 'Sample name updated',
         'username' => 'testuser_updated',
         'email' => 'test_updated@example.com',
+        'password' => 'password',
     ];
 
     $response = $this->putJson("/api/users/{$user->id}", $updatePayload);
@@ -101,6 +113,7 @@ it('returns 404 when updating non-existent user', function () {
         'name' => 'Sample name updated',
         'username' => 'testuser_updated',
         'email' => 'test_updated@example.com',
+        'password' => 'password',
     ];
 
     // Act

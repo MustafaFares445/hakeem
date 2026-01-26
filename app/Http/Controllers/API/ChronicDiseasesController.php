@@ -17,22 +17,21 @@ use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-final class ChronicDiseasesController
+final readonly class ChronicDiseasesController
 {
     public function __construct(private ChronicDiseasesService $chronicDiseasesService) {}
 
     /**
      * Get a paginated list of chronic_diseases with optional filtering.
      *
-     * @return ChronicDiseasesResource
+     * @return AnonymousResourceCollection<ChronicDiseases>
      */
     public function index(ChronicDiseasesFilterRequest $request): AnonymousResourceCollection
     {
-        $perPage = $request->get('perPage') ?? $request->get('per_page', 20);
-        $chronicDiseasess = ChronicDiseases::getQuery()
-            ->paginate($perPage);
+        $chronicDiseases = ChronicDiseases::getQuery()
+            ->paginate($request->input('perPage', 20));
 
-        return ChronicDiseasesResource::collection($chronicDiseasess)
+        return ChronicDiseasesResource::collection($chronicDiseases)
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
@@ -53,8 +52,6 @@ final class ChronicDiseasesController
 
     /**
      * Get a specific chronicDiseases by ID.
-     *
-     * @param  ChronicDiseases  $chronicDiseases
      */
     public function show(ChronicDiseases $chronicDisease): ChronicDiseasesResource
     {
@@ -64,8 +61,6 @@ final class ChronicDiseasesController
 
     /**
      * Update an existing chronicDiseases.
-     *
-     * @param  ChronicDiseases  $chronicDiseases
      *
      * @throws Throwable
      */
@@ -79,15 +74,10 @@ final class ChronicDiseasesController
 
     /**
      * Delete a chronicDiseases.
-     *
-     * @param  ChronicDiseases  $chronicDiseases
      */
     public function destroy(ChronicDiseases $chronicDisease): ChronicDiseasesResource
     {
-        $id = $chronicDisease->id;
         $chronicDisease->delete();
-
-        $chronicDisease->id = $id;
 
         return ChronicDiseasesResource::make($chronicDisease)
             ->additional(['message' => ResponseMessages::DELETED->message()]);
