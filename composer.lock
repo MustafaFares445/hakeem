@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6cfced4edd25f1bf02cd30d2d0a90701",
+    "content-hash": "eddb20df8a55a40f03067630c3408bee",
     "packages": [
         {
             "name": "brick/math",
@@ -2768,16 +2768,16 @@
         },
         {
             "name": "mustafafares/laravel-auto-crud",
-            "version": "v4.1.0",
+            "version": "v4.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MustafaFares445/laravel-auto-crud.git",
-                "reference": "b50ebceb0b2b0863fb94aa379cb357d7672742e6"
+                "reference": "3772eff066ac6c0db5308b293534f6060cce89a8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MustafaFares445/laravel-auto-crud/zipball/b50ebceb0b2b0863fb94aa379cb357d7672742e6",
-                "reference": "b50ebceb0b2b0863fb94aa379cb357d7672742e6",
+                "url": "https://api.github.com/repos/MustafaFares445/laravel-auto-crud/zipball/3772eff066ac6c0db5308b293534f6060cce89a8",
+                "reference": "3772eff066ac6c0db5308b293534f6060cce89a8",
                 "shasum": ""
             },
             "require": {
@@ -2817,7 +2817,7 @@
             ],
             "description": "Laravel Auto CRUD helps you streamline development and save time.",
             "support": {
-                "source": "https://github.com/MustafaFares445/laravel-auto-crud/tree/v4.1.0"
+                "source": "https://github.com/MustafaFares445/laravel-auto-crud/tree/v4.4.0"
             },
             "funding": [
                 {
@@ -2829,7 +2829,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-11T16:18:55+00:00"
+            "time": "2026-01-25T08:07:24+00:00"
         },
         {
             "name": "myclabs/deep-copy",
