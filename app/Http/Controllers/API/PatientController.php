@@ -65,7 +65,7 @@ final readonly class PatientController
     {
         $this->authorize('view', $patient);
 
-        return PatientResource::make($patient->load('media'))
+        return PatientResource::make($patient->load(['media', 'lastAppointment', 'firstAppointment']))
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
