@@ -33,7 +33,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/chronic_medications', ChronicMedicationsController::class);
 
     Route::apiResource('/bookings', BookingController::class);
-});
 
     Route::apiResource('/dental-labs', DentalLabController::class);
 
