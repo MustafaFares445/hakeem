@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Enums\AppointmentTypeEnum;
 use App\Models\Booking;
 use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
-use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 use Laravel\Sanctum\Sanctum;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
@@ -23,22 +23,22 @@ beforeEach(/**
 });
 
 it('sorts bookings', function () {
-    Booking::factory()->create(['appointment_type' => 'A booking']);
-    Booking::factory()->create(['appointment_type' => 'Z booking']);
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Preview->value]);
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Surgery->value]);
 
     $response = $this->getJson('/api/bookings?sort=appointmentType');
     $response->assertOk();
 
     $val1 = $response->json('data.0.appointmentType');
 
-    expect((string)$val1)->toContain('A');
+    expect($val1)->toBe(AppointmentTypeEnum::Preview->value);
 
     $response = $this->getJson('/api/bookings?sort=-appointmentType');
     $response->assertOk();
 
     $val2 = $response->json('data.0.appointmentType');
 
-    expect((string)$val2)->toContain('Z');
+    expect($val2)->toBe(AppointmentTypeEnum::Surgery->value);
 });
 
 it('filters bookings by patient_id', function () {
@@ -78,34 +78,34 @@ it('filters bookings by user_id', function () {
 });
 
 it('filters bookings by date', function () {
-            Booking::factory()->create(['date' => '2025-01-01']);
-            Booking::factory()->create();
+    Booking::factory()->create(['date' => '2025-01-01']);
+    Booking::factory()->create();
 
-            $response = $this->getJson('/api/bookings?filter[date]=' . ('2025-01-01'));
+    $response = $this->getJson('/api/bookings?filter[date]='.('2025-01-01'));
 
-            $response->assertOk();
-            expect($response->json('data'))->toHaveCount(1);
-        });
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(1);
+});
 
 it('filters bookings by time', function () {
-            Booking::factory()->create(['time' => 'Sample time']);
-            Booking::factory()->create();
+    Booking::factory()->create(['time' => 'Sample time']);
+    Booking::factory()->create();
 
-            $response = $this->getJson('/api/bookings?filter[time]=' . ('Sample time'));
+    $response = $this->getJson('/api/bookings?filter[time]='.('Sample time'));
 
-            $response->assertOk();
-            expect($response->json('data'))->toHaveCount(1);
-        });
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(1);
+});
 
 it('filters bookings by appointment_type', function () {
-            Booking::factory()->create(['appointment_type' => 'Sample appointment_type']);
-            Booking::factory()->create();
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Review->value]);
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Preview->value]);
 
-            $response = $this->getJson('/api/bookings?filter[appointmentType]=' . ('Sample appointment_type'));
+    $response = $this->getJson('/api/bookings?filter[appointmentType]='.AppointmentTypeEnum::Review->value);
 
-            $response->assertOk();
-            expect($response->json('data'))->toHaveCount(1);
-        });
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(1);
+});
 
 it('filters bookings by date range', function () {
     Booking::factory()->create(['created_at' => now()->subDays(5)]);
@@ -113,8 +113,8 @@ it('filters bookings by date range', function () {
 
     $after = now()->subDays(2)->format('Y-m-d');
     $before = now()->format('Y-m-d');
-    
-    $response = $this->getJson('/api/bookings?filter[createdAfter]=' . $after . '&filter[createdBefore]=' . $before);
+
+    $response = $this->getJson('/api/bookings?filter[createdAfter]='.$after.'&filter[createdBefore]='.$before);
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(1);
@@ -128,4 +128,3 @@ it('paginates filtered bookings', function () {
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(5);
 });
-

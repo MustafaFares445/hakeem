@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\AppointmentTypeEnum;
 use App\Models\Booking;
 use App\Models\Tenant;
 use App\Models\User;
@@ -44,7 +45,7 @@ it('forbids unauthorized user from creating booking', function () {
         'userId' => null,
         'date' => '2025-01-01',
         'time' => 'Sample time',
-        'appointmentType' => 'Sample appointment_type',
+        'appointmentType' => AppointmentTypeEnum::Preview->value,
     ];
 
     // Act
@@ -66,7 +67,7 @@ it('forbids unauthorized user from updating booking', function () {
         'userId' => null,
         'date' => '2025-01-01',
         'time' => 'Sample time',
-        'appointmentType' => 'Sample appointment_type',
+        'appointmentType' => AppointmentTypeEnum::Preview->value,
     ];
 
     // Act

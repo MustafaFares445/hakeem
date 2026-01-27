@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\AppointmentTypeEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,7 +25,7 @@ final class BookingFactory extends Factory
             'user_id' => null,
             'date' => fake()->date(),
             'time' => fake()->word(),
-            'appointment_type' => fake()->word(),
+            'appointment_type' => fake()->randomElement(AppointmentTypeEnum::cases())->value,
         ];
     }
 }

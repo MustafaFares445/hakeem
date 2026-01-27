@@ -20,21 +20,21 @@ trait BookingFilterQuery
                 AllowedFilter::callback('patientId', function (Builder $query, mixed $value) {
                     // Treat explicit "null" (string) or empty / null as a request
                     // to filter bookings where patient_id IS NULL.
-                    if ($value === null || $value === '' || (is_string($value) && strtolower(trim($value)) === 'null')) {
+                    if ($value === null || $value === '' || (is_string($value) && mb_strtolower(mb_trim($value)) === 'null')) {
                         return $query->whereNull('patient_id');
                     }
 
                     return $query->where('patient_id', $value);
                 }),
                 AllowedFilter::callback('tenantId', function (Builder $query, mixed $value) {
-                    if ($value === null || $value === '' || (is_string($value) && strtolower(trim($value)) === 'null')) {
+                    if ($value === null || $value === '' || (is_string($value) && mb_strtolower(mb_trim($value)) === 'null')) {
                         return $query->whereNull('tenant_id');
                     }
 
                     return $query->where('tenant_id', $value);
                 }),
                 AllowedFilter::callback('userId', function (Builder $query, mixed $value) {
-                    if ($value === null || $value === '' || (is_string($value) && strtolower(trim($value)) === 'null')) {
+                    if ($value === null || $value === '' || (is_string($value) && mb_strtolower(mb_trim($value)) === 'null')) {
                         return $query->whereNull('user_id');
                     }
 
@@ -42,7 +42,7 @@ trait BookingFilterQuery
                 }),
                 AllowedFilter::partial('date'),
                 AllowedFilter::partial('time'),
-                AllowedFilter::partial('appointmentType', 'appointment_type'),
+                AllowedFilter::exact('appointmentType', 'appointment_type'),
                 AllowedFilter::scope('createdAfter'),
                 AllowedFilter::scope('createdBefore'),
                 AllowedFilter::scope('search'),
@@ -74,25 +74,28 @@ trait BookingFilterQuery
 
     public function scopePatientId($query, $value)
     {
-        if ($value === '' || $value === null || (is_string($value) && trim($value) === '')) {
+        if ($value === '' || $value === null || (is_string($value) && mb_trim($value) === '')) {
             return $query->whereNull('patient_id');
         }
+
         return $query->where('patient_id', $value);
     }
 
     public function scopeTenantId($query, $value)
     {
-        if ($value === '' || $value === null || (is_string($value) && trim($value) === '')) {
+        if ($value === '' || $value === null || (is_string($value) && mb_trim($value) === '')) {
             return $query->whereNull('tenant_id');
         }
+
         return $query->where('tenant_id', $value);
     }
 
     public function scopeUserId($query, $value)
     {
-        if ($value === '' || $value === null || (is_string($value) && trim($value) === '')) {
+        if ($value === '' || $value === null || (is_string($value) && mb_trim($value) === '')) {
             return $query->whereNull('user_id');
         }
+
         return $query->where('user_id', $value);
     }
 

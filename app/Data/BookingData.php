@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Data;
 
+use App\Enums\AppointmentTypeEnum;
 use App\Models\Booking;
 use Carbon\Carbon;
 use Mrmarchone\LaravelAutoCrud\Traits\HasModelAttributes;
 use Spatie\LaravelData\Attributes\Validation\Date;
+use Spatie\LaravelData\Attributes\Validation\Enum;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
@@ -30,7 +32,7 @@ final class BookingData extends Data
         #[Date, WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d', 'Y-m-d\TH:i:sP'])]
         public ?Carbon $date,
         public ?string $time,
-        #[Max(255)]
-        public ?string $appointmentType
+        #[Enum(AppointmentTypeEnum::class)]
+        public ?AppointmentTypeEnum $appointmentType
     ) {}
 }

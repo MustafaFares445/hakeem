@@ -27,11 +27,9 @@ final class BookingResource extends JsonResource
             'userId' => $this->user_id,
             'date' => $this->date,
             'time' => $this->time,
-            'appointmentType' => $this->appointment_type,
+            'appointmentType' => $this->appointment_type?->value,
             'createdAt' => $this->created_at->toDateTimeString(),
             'updatedAt' => $this->updated_at->toDateTimeString(),
         ];
     }
 }
-
-

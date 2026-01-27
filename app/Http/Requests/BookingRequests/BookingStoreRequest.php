@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\BookingRequests;
 
+use App\Enums\AppointmentTypeEnum;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 final class BookingStoreRequest extends FormRequest
 {
@@ -21,8 +23,7 @@ final class BookingStoreRequest extends FormRequest
             'userId' => ['nullable', 'string', 'max:36'],
             'date' => ['required', 'date', 'date_format:Y-m-d'],
             'time' => ['required', 'string'],
-            'appointmentType' => ['required', 'string', 'max:255'],
+            'appointmentType' => ['required', new Enum(AppointmentTypeEnum::class)],
         ];
     }
 }
-
