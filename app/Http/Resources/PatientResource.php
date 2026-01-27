@@ -32,6 +32,8 @@ final class PatientResource extends JsonResource
             'registrationDate' => $this->registration_date,
             'notes' => $this->notes,
             'primaryImage' => MediaResource::make($this->whenLoaded('media', fn () => $this->getFirstMedia('primary-image'))),
+            'lastAppointment' => BookingResource::make($this->whenLoaded('lastAppointment')),
+            'firstAppointment' => BookingResource::make($this->whenLoaded('firstAppointment')),
             'createdAt' => $this->created_at->toDateTimeString(),
             'updatedAt' => $this->updated_at->toDateTimeString(),
         ];

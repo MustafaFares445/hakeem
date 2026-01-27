@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Mrmarchone\LaravelAutoCrud\Traits\HasMediaConversions;
 use Spatie\MediaLibrary\HasMedia;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
@@ -37,5 +38,28 @@ final class Patient extends Model implements HasMedia
     public function chronicMedications(): HasMany
     {
         return $this->hasMany(ChronicMedications::class);
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function lastAppointment(): HasOne
+    {
+        return $this->hasOne(Booking::class)
+            ->latestOfMany([
+                'date',
+                'time',
+            ]);
+    }
+
+    public function firstAppointment(): HasOne
+    {
+        return $this->hasOne(Booking::class)
+            ->oldestOfMany([
+                'date',
+                'time',
+            ]);
     }
 }
