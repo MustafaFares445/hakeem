@@ -34,6 +34,8 @@ final class AuthController
      *
      * @tags API
      *
+     * @unauthenticated
+     *
      * @throws AuthenticationException 401 Invalid credentials provided
      * @throws AuthorizationException 403 Email address not verified (for non-admin users)
      */
@@ -54,6 +56,8 @@ final class AuthController
      * @operation logout
      *
      * @tags API
+     *
+     * @authenticated
      */
     public function logout(Request $request): JsonResponse
     {
@@ -73,6 +77,8 @@ final class AuthController
      *
      * @tags API
      *
+     * @unauthenticated
+     *
      * @throws ValidationException 422 Invalid email address does not exist
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
@@ -91,6 +97,8 @@ final class AuthController
      * @operation resetPassword
      *
      * @tags API
+     *
+     * @unauthenticated
      *
      * @throws AuthorizationException 403 Invalid reset code or reset code has expired
      * @throws ValidationException 422 Invalid email, OTP format, or password validation failed

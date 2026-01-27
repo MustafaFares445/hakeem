@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\User;
+use App\Models\DentalLab;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin User
+ * @mixin DentalLab
  */
-final class UserResource extends JsonResource
+final class DentalLabResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -23,10 +23,8 @@ final class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
-            'emailVerifiedAt' => $this->email_verified_at,
-            'primaryImage' => MediaResource::make($this->whenLoaded('media', fn () => $this->getFirstMedia('primary-image'))),
-            'tenant' => TenantResource::make($this->whenLoaded('tenant')),
+            'phone' => $this->phone,
+            'address' => $this->address,
             'createdAt' => $this->created_at->toDateTimeString(),
             'updatedAt' => $this->updated_at->toDateTimeString(),
         ];
