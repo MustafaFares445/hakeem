@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests\AuthRequests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+final class ResetPasswordRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'email' => ['required', 'email', 'exists:users,email'],
+            'otp' => ['required', 'string', 'size:6'],
+            'password' => ['required', 'string', 'min:8', 'max:191', 'confirmed'],
+        ];
+    }
+}

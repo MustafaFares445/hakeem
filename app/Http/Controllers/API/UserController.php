@@ -1,61 +1,98 @@
 <?php
 
 declare(strict_types=1);
+
 namespace App\Http\Controllers\API;
 
-use App\Models\User;
 use App\Data\UserData;
-use App\Services\UserService;
-use App\Http\Requests\UserRequest;
+use App\Http\Requests\UserRequests\UserFilterRequest;
+use App\Http\Requests\UserRequests\UserStoreRequest;
+use App\Http\Requests\UserRequests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
-use App\Traits\FilterQueries\UserFilterQuery;
-use App\Http\Requests\UserFilterRequest;
-use Illuminate\Http\Response;
+use App\Models\User;
+use App\Services\UserService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class UserController
+final readonly class UserController
 {
-    public function __construct(protected UserService $userService){}
+    use AuthorizesRequests;
 
+    public function __construct(private UserService $userService) {}
+
+    /**
+     * Get a paginated list of users with optional filtering.
+     *
+     * @return AnonymousResourceCollection<UserResource>
+     */
     public function index(UserFilterRequest $request): AnonymousResourceCollection
     {
-        $users = User::getQuery()
-            ->paginate($request->get('per_page', 20));
+        $this->authorize('viewAny', User::class);
 
-        return UserResource::collection($users);
+        $users = User::getQuery()
+            ->paginate($request->input('perPage', 20));
+
+        return UserResource::collection($users)
+            ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
     /**
+     * Create a new user.
+     *
      * @throws Throwable
      */
-    public function store(UserRequest $request): UserResource
+    public function store(UserStoreRequest $request): JsonResponse
     {
+        $this->authorize('create', User::class);
+
         $user = $this->userService->store(UserData::from($request->validated()));
 
-        return UserResource::make($user->load('media'));
-    }
-
-    public function show(User $user): UserResource
-    {
-        return UserResource::make($user->load('media'));
+        return UserResource::make($user->load(['media', 'roles']))
+            ->additional(['message' => ResponseMessages::CREATED->message()])
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
+     * Get a specific user by ID.
+     */
+    public function show(User $user): UserResource
+    {
+        $this->authorize('view', $user);
+
+        return UserResource::make($user->load(['media', 'roles']))
+            ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
+    }
+
+    /**
+     * Update an existing user.
+     *
      * @throws Throwable
      */
-    public function update(UserRequest $request, User $user): UserResource
+    public function update(UserUpdateRequest $request, User $user): UserResource
     {
+        $this->authorize('update', $user);
+
         $updatedUser = $this->userService->update(UserData::from($request->validated()), $user);
 
-        return UserResource::make($updatedUser->load('media'));
+        return UserResource::make($updatedUser->load(['media', 'roles']))
+            ->additional(['message' => ResponseMessages::UPDATED->message()]);
     }
 
-    public function destroy(User $user): Response
+    /**
+     * Delete a user.
+     */
+    public function destroy(User $user): UserResource
     {
+        $this->authorize('delete', $user);
+
         $user->delete();
 
-        return response()->noContent();
+        return UserResource::make($user)
+            ->additional(['message' => ResponseMessages::DELETED->message()]);
     }
 }
-
