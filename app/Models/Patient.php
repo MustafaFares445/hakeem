@@ -38,4 +38,9 @@ final class Patient extends Model implements HasMedia
     {
         return $this->hasMany(ChronicMedications::class);
     }
+
+    public function medicalRecords(): HasMany
+    {
+        return $this->hasMany(MedicalRecord::class);
+    }
 }

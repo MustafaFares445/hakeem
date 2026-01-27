@@ -9,6 +9,7 @@ use App\Http\Requests\PatientRequests\PatientFilterRequest;
 use App\Http\Requests\PatientRequests\PatientStoreRequest;
 use App\Http\Requests\PatientRequests\PatientUpdateRequest;
 use App\Http\Resources\PatientResource;
+use App\Http\Resources\ToothOverviewResource;
 use App\Models\Patient;
 use App\Services\PatientService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -94,5 +95,16 @@ final readonly class PatientController
 
         return PatientResource::make($patient)
             ->additional(['message' => ResponseMessages::DELETED->message()]);
+    }
+
+    /**
+     * Get tooth overview for a patient with treatment history.
+     */
+    public function toothOverview(Patient $patient): ToothOverviewResource
+    {
+        $this->authorize('view', $patient);
+
+        return ToothOverviewResource::make($patient->load('medicalRecords'))
+            ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 }

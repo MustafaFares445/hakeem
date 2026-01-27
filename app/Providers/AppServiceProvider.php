@@ -6,6 +6,10 @@ namespace App\Providers;
 
 use App\Models\Scopes\DashboardRoleScope;
 use App\Models\User;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityRequirement;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -47,6 +51,17 @@ final class AppServiceProvider extends ServiceProvider
 
             return true;
         });
+
+        Scramble::configure()
+            ->withDocumentTransformers(function (OpenApi $openApi) {
+                $openApi->components->securitySchemes['tenant'] = SecurityScheme::apiKey('header', 'X-Tenant-ID');
+                $openApi->components->securitySchemes['bearer'] = SecurityScheme::http('bearer');
+
+                $openApi->security[] = new SecurityRequirement([
+                    'tenant' => [],
+                    'bearer' => [],
+                ]);
+            });
     }
 
     private function bootModelsDefaults(): void

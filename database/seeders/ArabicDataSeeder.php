@@ -7,9 +7,15 @@ namespace Database\Seeders;
 use App\Enums\PatientGenderEnum;
 use App\Enums\RoleEnum;
 use App\Enums\TenantTypes;
+use App\Enums\RecordTypeEnum;
 use App\Models\ChronicDiseases;
 use App\Models\ChronicMedications;
+use App\Models\FillerMaterial;
 use App\Models\Patient;
+use App\Models\DentalLab;
+use App\Models\MedicalRecord;
+use App\Models\MedicalRecordTreatment;
+use App\Models\Treatment;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -250,6 +256,95 @@ final class ArabicDataSeeder extends Seeder
             'أدوية علاج التهاب القولون',
         ];
 
+        $fillerMaterials = [
+            [
+                'name' => 'حشوة مؤقتة (IRM)',
+                'description' => 'حشوة مؤقتة لحماية السن لفترة قصيرة باستخدام مادة IRM.',
+            ],
+            [
+                'name' => 'حشوة كومبوزيت',
+                'description' => 'حشوة تجميلية بلون السن من مادة الكومبوزيت.',
+            ],
+            [
+                'name' => 'حشوة أملغم',
+                'description' => 'حشوة معدنية تقليدية (أملغم) للأسنان الخلفية.',
+            ],
+            [
+                'name' => 'حشوة جلاس أيونومر',
+                'description' => 'حشوة تطلق الفلورايد ومناسبة للأطفال والأسنان الحساسة.',
+            ],
+            [
+                'name' => 'حشوة سيراميك',
+                'description' => 'حشوة مصنوعة من السيراميك لمظهر جمالي ومتانة عالية.',
+            ],
+            [
+                'name' => 'حشوة ذهبية',
+                'description' => 'حشوة من الذهب تتميز بالقوة وطول العمر.',
+            ],
+        ];
+
+        foreach ($fillerMaterials as $material) {
+            FillerMaterial::create([
+                'name' => $material['name'],
+                'description' => $material['description'],
+                'tenant_id' => $tenant->id,
+            ]);
+        }
+
+        $dentalLabs = [
+            [
+                'name' => 'مختبر الأسنان المتكامل',
+                'phone' => '0112345678',
+                'address' => 'الرياض، حي العليا، شارع الملك فهد',
+            ],
+            [
+                'name' => 'مختبر ابتسامة الرياض',
+                'phone' => '0113456789',
+                'address' => 'الرياض، حي النرجس، شارع أنس بن مالك',
+            ],
+        ];
+
+        foreach ($dentalLabs as $lab) {
+            DentalLab::create([
+                'name' => $lab['name'],
+                'phone' => $lab['phone'],
+                'address' => $lab['address'],
+                'tenant_id' => $tenant->id,
+            ]);
+        }
+
+        $treatments = [
+            [
+                'name' => 'حشوة سن أمامي',
+                'description' => 'علاج تسوس في الأسنان الأمامية باستخدام حشوة تجميلية.',
+                'default_cost' => 300.00,
+            ],
+            [
+                'name' => 'حشوة سن خلفي',
+                'description' => 'حشوة للأسنان الخلفية لعلاج التسوس العميق.',
+                'default_cost' => 400.00,
+            ],
+            [
+                'name' => 'علاج عصب',
+                'description' => 'تنظيف وعلاج عصب السن مع حشوة نهائية.',
+                'default_cost' => 800.00,
+            ],
+            [
+                'name' => 'تنظيف وتلميع الأسنان',
+                'description' => 'تنظيف عميق للأسنان وإزالة الجير والتصبغات.',
+                'default_cost' => 250.00,
+            ],
+        ];
+
+        foreach ($treatments as $treatment) {
+            Treatment::create([
+                'name' => $treatment['name'],
+                'description' => $treatment['description'],
+                'default_cost' => $treatment['default_cost'],
+                'tenant_id' => $tenant->id,
+            ]);
+        }
+
         foreach ($patients as $patientData) {
             $patient = Patient::create($patientData);
 
@@ -269,6 +364,50 @@ final class ArabicDataSeeder extends Seeder
                     'title' => fake()->randomElement($chronicMedications),
                     'tenant_id' => $tenant->id,
                 ]);
+            }
+        }
+
+        $fillerMaterialModels = FillerMaterial::where('tenant_id', $tenant->id)->get();
+        $dentalLabModels = DentalLab::where('tenant_id', $tenant->id)->get();
+        $treatmentModels = Treatment::where('tenant_id', $tenant->id)->get();
+
+        $patientsForRecords = Patient::where('tenant_id', $tenant->id)->take(5)->get();
+
+        foreach ($patientsForRecords as $patient) {
+            $medicalRecord = MedicalRecord::create([
+                'patient_id' => $patient->id,
+                'record_date' => now()->subDays(rand(1, 10))->toDateString(),
+                'record_type' => RecordTypeEnum::InClinic->value,
+                'case_name' => 'ملف علاجي للأسنان',
+                'description' => 'متابعة علاجية لحالة تسوس وآلام الأسنان.',
+                'total_cost' => 0,
+                'remaining_amount' => 0,
+                'tenant_id' => $tenant->id,
+            ]);
+
+            $treatmentCount = rand(1, 3);
+
+            for ($i = 0; $i < $treatmentCount; $i++) {
+                $treatmentModel = $treatmentModels->random();
+                $fillerMaterialModel = $fillerMaterialModels->random();
+                $dentalLabModel = $dentalLabModels->random();
+
+                $recordTreatment = MedicalRecordTreatment::create([
+                    'medical_record_id' => $medicalRecord->id,
+                    'treatment_id' => $treatmentModel->id,
+                    'treatment_date' => now()->subDays(rand(0, 5))->toDateString(),
+                    'treatment_cost' => $treatmentModel->default_cost,
+                    'treatment_description' => 'جلسة علاجية ضمن خطة العلاج.',
+                    'tooth_position' => fake()->randomElement(['11', '12', '13', '14', '15', '16', '17', '18']),
+                    'filler_material_id' => $fillerMaterialModel->id,
+                    'dental_lab_id' => $dentalLabModel->id,
+                    'session_number' => $i + 1,
+                    'tenant_id' => $tenant->id,
+                ]);
+
+                $assignedDoctor = rand(0, 1) === 0 ? $doctor1 : $doctor2;
+
+                $recordTreatment->doctors()->sync([$assignedDoctor->id]);
             }
         }
     }

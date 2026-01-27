@@ -31,7 +31,7 @@ final class AuthService
         Gate::forUser($user)->authorize('attempt-login', [$data->password]);
 
         return [
-            'user' => $user,
+            'user' => $user->load('tenant'),
             'token' => $user->createToken('api-token')->plainTextToken,
         ];
     }

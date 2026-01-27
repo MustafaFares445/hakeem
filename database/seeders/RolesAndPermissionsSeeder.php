@@ -16,6 +16,11 @@ final class RolesAndPermissionsSeeder extends Seeder
             Permissions\PatientPermissionsSeeder::class,
             Permissions\ChronicDiseasesPermissionsSeeder::class,
             Permissions\ChronicMedicationsPermissionsSeeder::class,
+            Permissions\DentalLabPermissionsSeeder::class,
+            Permissions\TreatmentPermissionsSeeder::class,
+            Permissions\MedicalRecordPermissionsSeeder::class,
+            Permissions\MedicalRecordTreatmentPermissionsSeeder::class,
+            Permissions\FillerMaterialPermissionsSeeder::class,
         ]);
     }
 }
