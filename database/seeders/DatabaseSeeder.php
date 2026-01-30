@@ -14,6 +14,7 @@ final class DatabaseSeeder extends Seeder
         $this->call([
             RolesSeeder::class,
             Permissions\UserPermissionsSeeder::class,
+            Permissions\MediaPermissionsSeeder::class,
             ArabicDataSeeder::class,
         ]);
     }

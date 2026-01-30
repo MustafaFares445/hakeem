@@ -158,5 +158,21 @@ When using `--service --pattern=spatie-data --filter`, the command generates:
 - **Media Support**: Automatically handles single and multiple file uploads
 - **Filter Support**: Advanced filtering with search and pagination
 
+## Documentation
+
+| File | Description |
+|------|-------------|
+| [docs/api/medical-record-api-contract.md](docs/api/medical-record-api-contract.md) | API contract for the Medical Record feature (Flutter / frontend integration) |
+| [docs/api/booking-api-contract.md](docs/api/booking-api-contract.md) | API contract for the Booking (Calendar / Appointments) feature (Flutter / frontend integration) |
+| [docs/api/patient-management-api-contract.md](docs/api/patient-management-api-contract.md) | API contract for the Patient Management feature (Flutter / frontend integration) |
+| [docs/api/user-management-api-contract.md](docs/api/user-management-api-contract.md) | API contract for the User Management feature (Flutter / frontend integration) |
+| [docs/api/chronic-diseases-api-contract.md](docs/api/chronic-diseases-api-contract.md) | API contract for the Chronic Diseases feature (Flutter / frontend integration) |
+| [docs/api/chronic-medications-api-contract.md](docs/api/chronic-medications-api-contract.md) | API contract for the Chronic Medications feature (Flutter / frontend integration) |
+| [docs/api/dental-labs-api-contract.md](docs/api/dental-labs-api-contract.md) | API contract for the Dental Labs feature (Flutter / frontend integration) |
+| [docs/api/treatments-api-contract.md](docs/api/treatments-api-contract.md) | API contract for the Treatments feature (Flutter / frontend integration) |
+| [docs/api/filler-materials-api-contract.md](docs/api/filler-materials-api-contract.md) | API contract for the Filler Materials feature (Flutter / frontend integration) |
+| [CLAUDE.md](CLAUDE.md) | Project and Laravel Boost guidelines for AI assistants |
+| [TEST_ISSUES_REPORT.md](TEST_ISSUES_REPORT.md) | Test issues and notes |
+
 ## License
 **Laravel Starter Kit** was created by **[Mustafa Fares](https://www.linkedin.com/in/mustafa-fares/)** Forking from **[Nuno Maduro](https://x.com/enunomaduro)** Package.

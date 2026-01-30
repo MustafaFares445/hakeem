@@ -7,6 +7,7 @@ use App\Http\Controllers\API\ChronicDiseasesController;
 use App\Http\Controllers\API\ChronicMedicationsController;
 use App\Http\Controllers\API\DentalLabController;
 use App\Http\Controllers\API\FillerMaterialController;
+use App\Http\Controllers\API\MediaController;
 use App\Http\Controllers\API\MedicalRecordController;
 use App\Http\Controllers\API\MedicalRecordTreatmentController;
 use App\Http\Controllers\API\PatientController;
@@ -40,4 +41,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/medical-records', MedicalRecordController::class);
 
     Route::apiResource('/medical-record-treatments', MedicalRecordTreatmentController::class);
+
+    Route::apiResource('media', MediaController::class)->only(['index', 'store', 'show', 'destroy']);
 });
