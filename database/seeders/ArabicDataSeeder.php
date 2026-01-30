@@ -59,9 +59,9 @@ final class ArabicDataSeeder extends Seeder
         $secretariatRole = SpatieRole::where('name', RoleEnum::Secretariat->value)->first();
 
         $systemAdmin = User::create([
-            'name' => 'أحمد محمد العلي',
-            'username' => 'ahmed_admin',
-            'email' => 'ahmed.admin@alhakeem.com',
+            'name' => 'دكتور',
+            'username' => 'doctor_admin',
+            'email' => 'doctor@hakeem.sy',
             'phone_number' => '0501234567',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
@@ -70,20 +70,20 @@ final class ArabicDataSeeder extends Seeder
         $systemAdmin->assignRole($systemAdminRole);
 
         $doctor1 = User::create([
-            'name' => 'د. فاطمة عبدالله السالم',
-            'username' => 'fatima_doctor',
-            'email' => 'fatima.doctor@alhakeem.com',
+            'name' => 'سكريتاري',
+            'username' => 'sciretari_doctor',
+            'email' => 'sciretari@hakeem.sy',
             'phone_number' => '0502345678',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
             'tenant_id' => $tenant->id,
         ]);
-        $doctor1->assignRole($doctorRole);
+        $doctor1->assignRole($secretariatRole);
 
         $doctor2 = User::create([
             'name' => 'د. خالد سعد الدوسري',
             'username' => 'khalid_doctor',
-            'email' => 'khalid.doctor@alhakeem.com',
+            'email' => 'khalid@hakeem.sy',
             'phone_number' => '0503456789',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
@@ -94,7 +94,7 @@ final class ArabicDataSeeder extends Seeder
         $secretary1 = User::create([
             'name' => 'سارة علي القحطاني',
             'username' => 'sara_secretary',
-            'email' => 'sara.secretary@alhakeem.com',
+            'email' => 'sara@hakeem.sy',
             'phone_number' => '0504567890',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
@@ -105,7 +105,7 @@ final class ArabicDataSeeder extends Seeder
         $secretary2 = User::create([
             'name' => 'نورا محمد الحربي',
             'username' => 'nora_secretary',
-            'email' => 'nora.secretary@alhakeem.com',
+            'email' => 'nora@hakeem.sy',
             'phone_number' => '0505678901',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
@@ -116,7 +116,7 @@ final class ArabicDataSeeder extends Seeder
         $patients = [
             [
                 'name' => 'محمد عبدالرحمن الشمري',
-                'email' => 'mohammed.patient1@example.com',
+                'email' => 'mohammed@hakeem.sy',
                 'phone_number' => '0511111111',
                 'birthday' => '1985-03-15',
                 'gender' => PatientGenderEnum::Male->value,
@@ -128,7 +128,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'عائشة سالم العتيبي',
-                'email' => 'aisha.patient2@example.com',
+                'email' => 'aisha@hakeem.sy',
                 'phone_number' => '0512222222',
                 'birthday' => '1990-07-22',
                 'gender' => PatientGenderEnum::Female->value,
@@ -140,7 +140,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'عبدالله يوسف الغامدي',
-                'email' => 'abdullah.patient3@example.com',
+                'email' => 'abdullah@hakeem.sy',
                 'phone_number' => '0513333333',
                 'birthday' => '1978-11-08',
                 'gender' => PatientGenderEnum::Male->value,
@@ -152,7 +152,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'مريم حمد المطيري',
-                'email' => 'mariam.patient4@example.com',
+                'email' => 'mariam@hakeem.sy',
                 'phone_number' => '0514444444',
                 'birthday' => '1992-05-14',
                 'gender' => PatientGenderEnum::Female->value,
@@ -164,7 +164,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'سعد ناصر القحطاني',
-                'email' => 'saad.patient5@example.com',
+                'email' => 'saad@hakeem.sy',
                 'phone_number' => '0515555555',
                 'birthday' => '1988-09-30',
                 'gender' => PatientGenderEnum::Male->value,
@@ -176,7 +176,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'لينا فهد الدوسري',
-                'email' => 'lina.patient6@example.com',
+                'email' => 'lina@hakeem.sy',
                 'phone_number' => '0516666666',
                 'birthday' => '1995-12-03',
                 'gender' => PatientGenderEnum::Female->value,
@@ -188,7 +188,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'يوسف عبدالعزيز العلي',
-                'email' => 'youssef.patient7@example.com',
+                'email' => 'youssef@hakeem.sy',
                 'phone_number' => '0517777777',
                 'birthday' => '1982-04-18',
                 'gender' => PatientGenderEnum::Male->value,
@@ -200,7 +200,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'هند محمد الزهراني',
-                'email' => 'hind.patient8@example.com',
+                'email' => 'hind@hakeem.sy',
                 'phone_number' => '0518888888',
                 'birthday' => '1987-08-25',
                 'gender' => PatientGenderEnum::Female->value,
@@ -212,7 +212,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'طارق إبراهيم الشهراني',
-                'email' => 'tariq.patient9@example.com',
+                'email' => 'tariq@hakeem.sy',
                 'phone_number' => '0519999999',
                 'birthday' => '1993-06-12',
                 'gender' => PatientGenderEnum::Male->value,
@@ -224,7 +224,7 @@ final class ArabicDataSeeder extends Seeder
             ],
             [
                 'name' => 'ريم عبدالله العسيري',
-                'email' => 'reem.patient10@example.com',
+                'email' => 'reem@hakeem.sy',
                 'phone_number' => '0510000000',
                 'birthday' => '1991-10-07',
                 'gender' => PatientGenderEnum::Female->value,
