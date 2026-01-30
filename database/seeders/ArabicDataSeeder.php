@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\AppointmentTypeEnum;
 use App\Enums\PatientGenderEnum;
+use App\Enums\RecordTypeEnum;
 use App\Enums\RoleEnum;
 use App\Enums\TenantTypes;
-use App\Enums\RecordTypeEnum;
+use App\Models\Booking;
 use App\Models\ChronicDiseases;
 use App\Models\ChronicMedications;
-use App\Models\FillerMaterial;
-use App\Models\Patient;
 use App\Models\DentalLab;
+use App\Models\FillerMaterial;
 use App\Models\MedicalRecord;
 use App\Models\MedicalRecordTreatment;
-use App\Models\Treatment;
+use App\Models\Patient;
 use App\Models\Tenant;
+use App\Models\Treatment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -408,6 +410,31 @@ final class ArabicDataSeeder extends Seeder
                 $assignedDoctor = rand(0, 1) === 0 ? $doctor1 : $doctor2;
 
                 $recordTreatment->doctors()->sync([$assignedDoctor->id]);
+            }
+        }
+
+        $allPatients = Patient::where('tenant_id', $tenant->id)->get();
+        $appointmentTypes = AppointmentTypeEnum::cases();
+        $timeSlots = ['08:00:00', '09:00:00', '10:00:00', '11:00:00', '14:00:00', '15:00:00', '16:00:00', '17:00:00'];
+
+        foreach ($allPatients as $patient) {
+            $bookingCount = rand(2, 5);
+
+            for ($i = 0; $i < $bookingCount; $i++) {
+                $daysAgo = rand(-30, 60);
+                $appointmentDate = now()->addDays($daysAgo)->toDateString();
+                $appointmentTime = fake()->randomElement($timeSlots);
+                $appointmentType = fake()->randomElement($appointmentTypes);
+                $assignedDoctor = rand(0, 1) === 0 ? $doctor1 : $doctor2;
+
+                Booking::create([
+                    'patient_id' => $patient->id,
+                    'tenant_id' => $tenant->id,
+                    'date' => $appointmentDate,
+                    'time' => $appointmentTime,
+                    'appointment_type' => $appointmentType->value,
+                    'user_id' => $assignedDoctor->id,
+                ]);
             }
         }
     }
