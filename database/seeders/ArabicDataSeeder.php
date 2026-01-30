@@ -58,27 +58,28 @@ final class ArabicDataSeeder extends Seeder
         $doctorRole = SpatieRole::where('name', RoleEnum::Doctor->value)->first();
         $secretariatRole = SpatieRole::where('name', RoleEnum::Secretariat->value)->first();
 
+        /******************************************************* */
         $systemAdmin = User::create([
-            'name' => 'دكتور',
-            'username' => 'doctor_admin',
-            'email' => 'doctor@hakeem.sy',
+            'name' => 'مدير النظام',
+            'username' => 'system_admin',
+            'email' => 'systemAdmin@hakeem.sy',
             'phone_number' => '0501234567',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
-            'tenant_id' => $tenant->id,
         ]);
         $systemAdmin->assignRole($systemAdminRole);
 
+        /******************************************************* */
         $doctor1 = User::create([
-            'name' => 'سكريتاري',
-            'username' => 'sciretari_doctor',
-            'email' => 'sciretari@hakeem.sy',
+            'name' => 'دكتور العيادة',
+            'username' => 'doctor_clinic',
+            'email' => 'doctor@hakeem.sy',
             'phone_number' => '0502345678',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
             'tenant_id' => $tenant->id,
         ]);
-        $doctor1->assignRole($secretariatRole);
+        $doctor1->assignRole($doctorRole);
 
         $doctor2 = User::create([
             'name' => 'د. خالد سعد الدوسري',
@@ -91,10 +92,11 @@ final class ArabicDataSeeder extends Seeder
         ]);
         $doctor2->assignRole($doctorRole);
 
+        /******************************************************* */
         $secretary1 = User::create([
-            'name' => 'سارة علي القحطاني',
-            'username' => 'sara_secretary',
-            'email' => 'sara@hakeem.sy',
+            'name' => 'سكريتاري العيادة',
+            'username' => 'secretary_clinic',
+            'email' => 'secretary@hakeem.sy',
             'phone_number' => '0504567890',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
