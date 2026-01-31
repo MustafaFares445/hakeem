@@ -52,21 +52,21 @@ final readonly class MediaController
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    public function show(Media $media): MediaResource
+    public function show(Media $medium): MediaResource
     {
-        $this->authorize('view', $media);
+        $this->authorize('view', $medium);
 
-        return MediaResource::make($media)
+        return MediaResource::make($medium)
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
-    public function destroy(Media $media): MediaResource
+    public function destroy(Media $medium): MediaResource
     {
-        $this->authorize('delete', $media);
+        $this->authorize('delete', $medium);
 
-        $media->delete();
+        $medium->delete();
 
-        return MediaResource::make($media)
+        return MediaResource::make($medium)
             ->additional(['message' => ResponseMessages::DELETED->message()]);
     }
 }

@@ -34,7 +34,7 @@ final readonly class MedicalRecordController
         $this->authorize('viewAny', MedicalRecord::class);
 
         $medicalRecords = MedicalRecord::getQuery()
-            ->with(['patient', 'treatments'])
+            ->with(['patient', 'treatments', 'billings'])
             ->paginate($request->input('perPage', 20));
 
         return MedicalRecordResource::collection($medicalRecords)
@@ -50,9 +50,14 @@ final readonly class MedicalRecordController
     {
         $this->authorize('create', MedicalRecord::class);
 
-        $medicalRecord = $this->medicalRecordService->store(MedicalRecordData::from($request->validated()));
+        $validated = $request->validated();
+        $medicalRecord = $this->medicalRecordService->store(
+            MedicalRecordData::from($validated),
+            isset($validated['totalCost']) ? (float) $validated['totalCost'] : null,
+            isset($validated['paidAmount']) ? (float) $validated['paidAmount'] : null
+        );
 
-        return MedicalRecordResource::make($medicalRecord->load(['patient', 'treatments', 'media']))
+        return MedicalRecordResource::make($medicalRecord->load(['patient', 'treatments', 'media', 'billings']))
             ->additional(['message' => ResponseMessages::CREATED->message()])
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
@@ -65,7 +70,7 @@ final readonly class MedicalRecordController
     {
         $this->authorize('view', $medicalRecord);
 
-        return MedicalRecordResource::make($medicalRecord->load(['patient', 'treatments', 'media']))
+        return MedicalRecordResource::make($medicalRecord->load(['patient', 'treatments', 'media', 'billings']))
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
@@ -78,9 +83,15 @@ final readonly class MedicalRecordController
     {
         $this->authorize('update', $medicalRecord);
 
-        $updatedMedicalRecord = $this->medicalRecordService->update(MedicalRecordData::from($request->validated()), $medicalRecord);
+        $validated = $request->validated();
+        $updatedMedicalRecord = $this->medicalRecordService->update(
+            MedicalRecordData::from($validated),
+            $medicalRecord,
+            isset($validated['totalCost']) ? (float) $validated['totalCost'] : null,
+            isset($validated['paidAmount']) ? (float) $validated['paidAmount'] : null
+        );
 
-        return MedicalRecordResource::make($updatedMedicalRecord->load(['patient', 'treatments', 'media']))
+        return MedicalRecordResource::make($updatedMedicalRecord->load(['patient', 'treatments', 'media', 'billings']))
             ->additional(['message' => ResponseMessages::UPDATED->message()]);
     }
 

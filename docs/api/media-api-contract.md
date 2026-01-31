@@ -177,7 +177,18 @@ Used when the user clicks the trash/delete icon on a file.
 
 ---
 
-## 6. Mapping UI to API
+## 6. Related Endpoints
+
+| Purpose | Method | Endpoint | Use in UI |
+|---------|--------|----------|-----------|
+| Patient list (context) | GET | `/api/patients` | Resolve patient ID for Files/Documents section |
+| Medical records (optional target) | GET | `/api/medical-records?filter[patientId]={id}` | “Add Files” – optionally attach to a specific record |
+
+Media is always scoped by patient (and optionally by medical record) and by the current tenant; no separate “media types” or “categories” endpoint is required beyond the collection filter and the resource shape above.
+
+---
+
+## 7. Deep Dive: Mapping UI to API
 
 ### Screen: Files/Documents
 
@@ -195,7 +206,7 @@ Used when the user clicks the trash/delete icon on a file.
 
 ---
 
-## 7. Request/Response Examples
+## 8. Request/Response Examples
 
 ### Example: List All Documents for a Patient
 
@@ -265,11 +276,37 @@ Authorization: Bearer <token>
 
 ---
 
-## 8. Related Endpoints
+## 9. Error Handling and Validation
 
-| Purpose | Method | Endpoint | Use in UI |
-|---------|--------|----------|-----------|
-| Patient list (context) | GET | `/api/patients` | Resolve patient ID for Files/Documents section |
-| Medical records (optional target) | GET | `/api/medical-records?filter[patientId]={id}` | “Add Files” – optionally attach to a specific record |
+| Status | Meaning | Typical cause |
+|--------|---------|----------------|
+| **401 Unauthorized** | Unauthenticated | Missing or invalid Bearer token |
+| **403 Forbidden** | Not allowed | User lacks permission to view/delete the underlying model (Patient or MedicalRecord) |
+| **404 Not Found** | Resource missing | Invalid media ID or deleted resource |
+| **422 Unprocessable Entity** | Validation failed | Missing required filter, invalid UUIDs, or file validation (size, type) |
 
-Media is always scoped by patient (and optionally by medical record) and by the current tenant; no separate “media types” or “categories” endpoint is required beyond the collection filter and the resource shape above.
+**422 response body** example (missing required filter):
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "filter.patientAndMedicalRecords": ["The filter.patient and medical records field is required."]
+  }
+}
+```
+
+**Validation rules (quick reference):**
+
+- **List:** `filter[patientAndMedicalRecords]` (required, UUID, must exist in patients).
+- **Create:** `patientId` (required, UUID, exists), `medicalRecordId` (optional, UUID, exists, must belong to patient), `files` (required, one or more files, max 10 MB each), `collection` (optional, default `other`).
+
+---
+
+## 10. Flutter-Oriented Notes
+
+- **JSON keys:** Use **camelCase** for all request and response keys (query params use camelCase for filter names).
+- **Upload:** Use **multipart/form-data** for `POST /api/media`; send `patientId`, `files`, and optionally `medicalRecordId` and `collection`.
+- **IDs:** Patient and medical record IDs are **UUID** strings; media `id` is an integer (bigint).
+- **Pagination:** Use `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`; control page size with `perPage`.
+- **Collections:** Use `filter[collectionName]` for list (e.g. `laboratory-tests`, `imaging-scans`, `documents`, `other`) and `collection` on upload to match Files/Documents tabs.

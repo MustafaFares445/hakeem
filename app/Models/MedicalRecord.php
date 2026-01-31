@@ -20,23 +20,25 @@ final class MedicalRecord extends Model implements HasMedia
 
     protected $fillable = [
         'patient_id',
+        'tenant_id',
         'record_date',
         'record_type',
         'case_name',
         'description',
-        'total_cost',
-        'remaining_amount',
     ];
 
     protected $casts = [
         'record_date' => 'date',
-        'total_cost' => 'decimal:2',
-        'remaining_amount' => 'decimal:2',
     ];
 
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    public function billings(): HasMany
+    {
+        return $this->hasMany(Billing::class);
     }
 
     public function treatments(): HasMany

@@ -21,6 +21,7 @@ final class RolesAndPermissionsSeeder extends Seeder
             Permissions\MedicalRecordPermissionsSeeder::class,
             Permissions\MedicalRecordTreatmentPermissionsSeeder::class,
             Permissions\FillerMaterialPermissionsSeeder::class,
+            Permissions\BillingPermissionsSeeder::class,
             Permissions\MediaPermissionsSeeder::class,
         ]);
     }

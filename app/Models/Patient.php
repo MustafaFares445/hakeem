@@ -19,6 +19,7 @@ final class Patient extends Model implements HasMedia
     use BelongsToTenant, HasFactory, HasMediaConversions, HasUuids , PatientFilterQuery;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'email',
         'phone_number',

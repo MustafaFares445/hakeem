@@ -16,8 +16,11 @@ final class FillerMaterialStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /** @example "Composite A2" */
             'name' => ['required', 'string', 'max:255'],
+            /** @example "Dental composite material" */
             'description' => ['nullable', 'string', 'max:1000'],
+            /** @example true */
             'isActive' => ['nullable', 'boolean'],
         ];
     }

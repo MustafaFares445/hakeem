@@ -23,6 +23,10 @@ final class MediaPolicy
     {
         $model = $media->model;
 
+        if ($model === null) {
+            return $this->authorizeAction($user, 'view');
+        }
+
         if ($model instanceof Patient) {
             return $user->can('view', $model);
         }
@@ -57,6 +61,10 @@ final class MediaPolicy
     public function delete(User $user, Media $media): bool
     {
         $model = $media->model;
+
+        if ($model === null) {
+            return $this->authorizeAction($user, 'delete');
+        }
 
         if ($model instanceof Patient) {
             return $user->can('delete', $model);

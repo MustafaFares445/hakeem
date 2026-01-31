@@ -42,6 +42,7 @@ it('lists medical records', function () {
             ->and($firstItem)->toHaveKey('caseName')
             ->and($firstItem)->toHaveKey('description')
             ->and($firstItem)->toHaveKey('totalCost')
+            ->and($firstItem)->toHaveKey('amountPaid')
             ->and($firstItem)->toHaveKey('remainingAmount');
     }
 });
@@ -56,7 +57,7 @@ it('creates a medical record', function () {
         'caseName' => 'Sample case',
         'description' => 'Sample description',
         'totalCost' => 1000.50,
-        'remainingAmount' => 500.25,
+        'paidAmount' => 500.25,
     ];
 
     $response = $this->postJson('/api/medical-records', $payload);
@@ -84,6 +85,7 @@ it('shows a medical record', function () {
         ->and($data)->toHaveKey('caseName')
         ->and($data)->toHaveKey('description')
         ->and($data)->toHaveKey('totalCost')
+        ->and($data)->toHaveKey('amountPaid')
         ->and($data)->toHaveKey('remainingAmount');
 });
 
@@ -96,7 +98,7 @@ it('updates a medical record', function () {
         'caseName' => 'Updated case name',
         'description' => 'Updated description',
         'totalCost' => 1500.00,
-        'remainingAmount' => 200.00,
+        'paidAmount' => 200.00,
     ];
 
     $response = $this->putJson("/api/medical-records/{$medicalRecord->id}", $updatePayload);
@@ -145,4 +147,3 @@ it('returns 404 when deleting non-existent medical record', function () {
 
     $response->assertNotFound();
 });
-

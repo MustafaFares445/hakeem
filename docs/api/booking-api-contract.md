@@ -1,6 +1,6 @@
 # Booking (Appointments) API Contract (Flutter)
 
-This document is the API contract for the **Booking (Calendar / Appointments)** feature in Hakeem. It is intended for Flutter developers integrating against the Hakeem backend. It uses the Figma designs (Calendar view and Patient Appointments tab) as the source of truth for UI and data points. **The appointments API is not yet implemented in the backend;** this contract describes the intended API for implementation and frontend integration.
+This document is the API contract for the **Booking (Calendar / Appointments)** feature in Hakeem. It is intended for Flutter developers integrating against the Hakeem backend. It uses the Figma designs (Calendar view and Patient Appointments tab) as the source of truth for UI and data points. It includes examples and a deep dive into the feature. The API is **implemented** in the backend.
 
 ---
 
@@ -26,7 +26,7 @@ The backend is multi-tenant. The authenticated user’s tenant context is applie
 ### Request and Response Format
 
 - **Content-Type:** `application/json`
-- **Request body and query parameters:** **camelCase** (e.g. `patientId`, `doctorId`, `appointmentDate`, `startTime`, `endTime`)
+- **Request body and query parameters:** **camelCase** (e.g. `patientId`, `userId`, `date`, `time`, `appointmentType`)
 - **Response body:** **camelCase** (Laravel API Resources return camelCase keys)
 
 ---
@@ -35,9 +35,9 @@ The backend is multi-tenant. The authenticated user’s tenant context is applie
 
 ```mermaid
 erDiagram
-    Patient ||--o{ Appointment : has
-    User ||--o{ Appointment : "assigned doctor"
-    Appointment }o--o| MedicalRecord : "optional case"
+    Patient ||--o{ Booking : has
+    User ||--o{ Booking : "assigned doctor"
+    Tenant ||--o{ Booking : "belongs to"
     Patient {
         uuid id
         string name
@@ -48,52 +48,46 @@ erDiagram
         string name
         string email
     }
-    Appointment {
+    Tenant {
+        uuid id
+        string name
+    }
+    Booking {
         uuid id
         uuid patient_id
-        uuid doctor_id
-        date appointment_date
-        string start_time
-        string end_time
-        string type
-        string description
-        string case_name
-        string status
+        uuid tenant_id
+        uuid user_id
+        date date
+        string time
+        string appointment_type
     }
 ```
 
-- **Patient** (1) → (N) **Appointment**
-- **User** (doctor) (1) → (N) **Appointment** (assigned doctor)
-- **Appointment** may optionally reference a **MedicalRecord** (case) via `caseName` or `medicalRecordId`; exact linkage is backend-defined.
+- **Patient** (1) → (N) **Booking**
+- **User** (doctor) (1) → (N) **Booking** (assigned doctor via `userId`)
+- **Tenant** (1) → (N) **Booking** (tenant context; applied automatically)
 
 ---
 
 ## 3. Enums (Source of Truth for Dropdowns)
 
-### Booking Type (Appointment Type)
+### Appointment Type
 
-Used for **“Booking Type”** in the calendar blocks and in the Patient Appointments tab filter. Values shown in Figma: “Preview”, “review”, “Surgery”, and descriptions like “Follow-Up Visit After Wisdom Tooth Extraction”. The API can use short codes for filtering; display labels can be longer.
+Used for **“Booking Type”** in the calendar blocks and in the Patient Appointments tab filter.
 
-| API Value   | Display Label (example) |
-|------------|---------------------------|
-| `preview`  | Preview                   |
-| `review`   | Review                    |
-| `surgery`  | Surgery                   |
-| `follow_up`| Follow-Up                 |
-
-*(Backend may define additional types; Flutter should consume a list from `GET /api/appointment-types` if available, or use the enum above as default.)*
-
-### Status / Color Code (Optional)
-
-Calendar blocks use colored top borders (e.g. yellow, blue, red) to indicate type or status. The API can expose a `status` or `colorCode` field so the app can style blocks consistently (e.g. `scheduled`, `in_progress`, `completed`, or map type to color on the client).
+| API Value  | Display Label (example) |
+|------------|--------------------------|
+| `preview`  | Preview                  |
+| `surgery`  | Surgery                  |
+| `review`   | Review                   |
 
 ---
 
-## 4. Appointments Endpoints
+## 4. Bookings Endpoints
 
-### List Appointments
+### List Bookings
 
-**`GET /api/appointments`**
+**`GET /api/bookings`**
 
 Used for: **Calendar weekly/monthly view**, **Patient Appointments tab** (filter by `patientId`).
 
@@ -103,26 +97,26 @@ Used for: **Calendar weekly/monthly view**, **Patient Appointments tab** (filter
 |-----------|------|-------------|
 | `perPage` | integer | Page size (1–100). Default: 20 |
 | `filter[patientId]` | UUID | Filter by patient (e.g. patient profile “Appointments” tab) |
-| `filter[doctorId]` | UUID | Filter by assigned doctor |
-| `filter[type]` | string | Booking type (e.g. `preview`, `surgery`, `review`) |
-| `filter[appointmentDateAfter]` | date (Y-m-d) | Appointment date ≥ (e.g. start of week) |
-| `filter[appointmentDateBefore]` | date (Y-m-d) | Appointment date ≤ (e.g. end of week) |
+| `filter[userId]` | UUID | Filter by assigned doctor |
+| `filter[date]` | date (Y-m-d) | Exact match on booking date |
+| `filter[time]` | string | Partial match on time |
+| `filter[appointmentType]` | string | `preview`, `surgery`, or `review` |
 | `filter[createdAfter]` | date | Created at ≥ |
 | `filter[createdBefore]` | date | Created at ≤ |
-| `search` | string | Search in appointment description, patient name, or case name (“Search Appointment, Patient, etc…”) |
-| `sort` | string | `appointmentDate`, `-appointmentDate`, `startTime`, `-startTime`, `createdAt`, `-createdAt`. Default: `-created_at` or `appointmentDate,startTime` |
+| `search` | string | Search (backend-defined) |
+| `sort` | string | `date`, `-date`, `time`, `-time`, `appointmentType`, `-appointmentType`, `userId`, `-userId`, `patientId`, `-patientId`. Default: `-created_at` |
 
-**Response:** Paginated collection with `data`, `links`, `meta`. Each item follows the Appointment resource shape below.
+**Response:** Paginated collection with `data`, `links`, `meta`. Each item follows the Booking resource shape below.
 
-**Calendar usage:** Request a date range with `filter[appointmentDateAfter]` and `filter[appointmentDateBefore]` (e.g. Monday–Sunday of the displayed week). Optionally filter by `doctorId` and use `search` for the header search bar.
+**Calendar usage:** Request a date range by filtering on `filter[date]` or use `filter[createdAfter]` / `filter[createdBefore]` for date range. Optionally filter by `userId` and use `search` for the header search bar.
 
-**Patient tab usage:** `GET /api/appointments?filter[patientId]={patientId}&sort=-appointmentDate&perPage=20`.
+**Patient tab usage:** `GET /api/bookings?filter[patientId]={patientId}&sort=-date&perPage=20`.
 
 ---
 
-### Create Appointment
+### Create Booking
 
-**`POST /api/appointments`**
+**`POST /api/bookings`**
 
 Triggered by the **(+) “Add New Appointment”** button in the Calendar header.
 
@@ -130,44 +124,41 @@ Triggered by the **(+) “Add New Appointment”** button in the Calendar header
 
 | Field | Type | Required | Validation |
 |-------|------|----------|------------|
-| `patientId` | UUID | Yes | Must exist in `patients` |
-| `doctorId` | UUID | Yes | Must exist in `users` |
-| `appointmentDate` | string | Yes | Date, format `Y-m-d` |
-| `startTime` | string | Yes | Time, format `HH:mm` (e.g. `09:00`) |
-| `endTime` | string | Yes | Time, format `HH:mm` (e.g. `10:00`) |
-| `type` | string | Yes | Booking type enum (e.g. `preview`, `surgery`, `review`) |
-| `description` | string | No | Free text (e.g. “Follow-Up Visit After Wisdom Tooth Extraction”), max length TBD |
-| `caseName` | string | No | Case name or reference to medical record |
+| `patientId` | UUID | No | Must exist in `patients` (nullable in backend) |
+| `userId` | UUID | No | Must exist in `users` (assigned doctor; nullable in backend) |
+| `date` | string | Yes | Date, format `Y-m-d` |
+| `time` | string | Yes | Time (e.g. `09:00`) |
+| `appointmentType` | string | Yes | `preview`, `surgery`, or `review` |
 
-**Response:** `201 Created`. Body includes `data` (full appointment resource with `patient`, `doctor` when loaded) and `message`.
+**Response:** `201 Created`. Body includes `data` (full booking resource) and `message`.
 
 ---
 
-### Show Appointment
+### Show Booking
 
-**`GET /api/appointments/{id}`**
+**`GET /api/bookings/{id}`**
 
 Used when the user clicks an appointment block (**“Preview”** or options) to view full details.
 
-**Response:** `200 OK`. Single appointment resource with `patient`, `doctor` loaded.
+**Response:** `200 OK`. Single booking resource.
 
 ---
 
-### Update Appointment
+### Update Booking
 
-**`PUT /api/appointments/{id}`** or **`PATCH /api/appointments/{id}`**
+**`PUT /api/bookings/{id}`** or **`PATCH /api/bookings/{id}`**
 
 Used when editing from the **(...)** options menu on an appointment block.
 
-**Request body:** Same fields as create, all optional: `patientId`, `doctorId`, `appointmentDate`, `startTime`, `endTime`, `type`, `description`, `caseName`.
+**Request body:** Same fields as create, all optional: `patientId`, `userId`, `date`, `time`, `appointmentType`.
 
-**Response:** `200 OK`. Full appointment resource.
+**Response:** `200 OK`. Full booking resource.
 
 ---
 
-### Delete Appointment
+### Delete Booking
 
-**`DELETE /api/appointments/{id}`**
+**`DELETE /api/bookings/{id}`**
 
 Used from the **(...)** options menu on an appointment block.
 
@@ -175,36 +166,34 @@ Used from the **(...)** options menu on an appointment block.
 
 ---
 
-### Appointment Resource Shape (camelCase)
+### Booking Resource Shape (camelCase)
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string (UUID) | Primary key |
 | `patientId` | string (UUID) | Patient reference |
-| `patient` | object | Patient resource when loaded (id, name, email, etc.) |
-| `doctorId` | string (UUID) | Assigned doctor (user) reference |
-| `doctor` | object | User resource when loaded (id, name, email, etc.) |
-| `appointmentDate` | string | Date only, `YYYY-MM-DD` |
-| `startTime` | string | Time, `HH:mm` (e.g. `09:00`) |
-| `endTime` | string | Time, `HH:mm` (e.g. `10:00`) |
-| `type` | string | Booking type (e.g. `preview`, `surgery`, `review`) |
-| `description` | string \| null | Optional notes or description |
-| `caseName` | string \| null | Case name (e.g. “Root Canal Treatment”) |
-| `status` or `colorCode` | string \| null | Optional; for calendar block styling |
+| `tenantId` | string (UUID) | Tenant reference |
+| `userId` | string (UUID) | Assigned doctor (user) reference |
+| `date` | string | Date only, `YYYY-MM-DD` |
+| `time` | string | Time (e.g. `09:00`) |
+| `appointmentType` | string | `preview`, `surgery`, or `review` |
 | `createdAt` | string | ISO date-time |
 | `updatedAt` | string | ISO date-time |
 
+**Note:** The current API resource does not nest `patient` or `user` (doctor) objects. Use `patientId` and `userId` with `GET /api/patients/{id}` and `GET /api/users/{id}` when you need names for display.
+
 ---
 
-## 5. Related Endpoints (for Dropdowns and Context)
+## 5. Related Endpoints (Figma Dropdowns and Context)
 
 | Purpose | Method | Endpoint | Use in UI |
 |---------|--------|----------|-----------|
-| Patient list (select patient) | GET | `/api/patients` | “Add Appointment” form – patient dropdown |
-| Doctor list (select doctor) | GET | `/api/users` | “Add Appointment” form – doctor dropdown; filter by role if backend supports |
-| Appointment types (if separate) | GET | `/api/appointment-types` | “Booking Type” dropdown (if backend exposes this) |
+| Patient list (select patient) | GET | `/api/patients` | “Add Booking” form – patient dropdown |
+| Doctor list (select doctor) | GET | `/api/users` | “Add Booking” form – doctor dropdown |
+| Single patient | GET | `/api/patients/{id}` | Resolve patient name for booking block |
+| Single user (doctor) | GET | `/api/users/{id}` | Resolve doctor name for booking block |
 
-Patient and User resources are already defined elsewhere; use their `id`, `name`, and `email` for dropdowns and appointment block display.
+Patient and User resources are defined in [Patient Management API contract](patient-management-api-contract.md) and [User Management API contract](user-management-api-contract.md). Use their `id`, `name`, and `email` for dropdowns and booking block display.
 
 ---
 
@@ -214,56 +203,45 @@ Patient and User resources are already defined elsewhere; use their `id`, `name`
 
 | Figma element | API / action |
 |---------------|--------------|
-| Week range (e.g. “Oct 23 - Oct 29 2024”) | Request `GET /api/appointments` with `filter[appointmentDateAfter]=2024-10-23` and `filter[appointmentDateBefore]=2024-10-29` |
+| Week range (e.g. “Oct 23 - Oct 29 2024”) | Request `GET /api/bookings` with `filter[createdAfter]=2024-10-23` and `filter[createdBefore]=2024-10-29` (or filter by `date` as needed) |
 | “Search Appointment, Patient, etc…” | Pass value as `search` query parameter on list endpoint |
-| “Filter” button | Apply optional `filter[doctorId]`, `filter[type]` (and date range) |
-| “Monthly” / “Weekly” toggle | Same list endpoint; adjust date range (e.g. first–last day of month for monthly) |
-| (+) Add New Appointment | `POST /api/appointments` with patient, doctor, date, start/end time, type, description |
-| Appointment block (patient name, type, doctor, time) | Each block = one appointment from list response; use `patient.name`, `type`, `doctor.name`, `startTime`–`endTime` |
-| (...) options on block | “Preview” → `GET /api/appointments/{id}`; Edit → `PUT /api/appointments/{id}`; Delete → `DELETE /api/appointments/{id}` |
+| “Filter” button | Apply optional `filter[userId]`, `filter[appointmentType]` (and date range) |
+| “Monthly” / “Weekly” toggle | Same list endpoint; adjust date range |
+| (+) Add New Appointment | `POST /api/bookings` with patientId, userId, date, time, appointmentType |
+| Appointment block (patient name, type, doctor, time) | Each block = one booking from list response; resolve patient/user names via their IDs |
+| (...) options on block | “Preview” → `GET /api/bookings/{id}`; Edit → `PUT /api/bookings/{id}`; Delete → `DELETE /api/bookings/{id}` |
 | Print icon | Client-side print of current calendar data (no extra API) |
 
 ### Screen: Patient List – Patient Profile – “Appointments” Tab
 
 | Figma element | API / action |
 |---------------|--------------|
-| “15 Past” / “2 Upcoming” | Optional: two counts from `GET /api/appointments?filter[patientId]={id}` with date filters for past vs future; or backend can expose counts on patient resource |
-| Timeline entries (date, time, booking type, case name) | `GET /api/appointments?filter[patientId]={patientId}&sort=-appointmentDate`; display `appointmentDate`, `startTime`–`endTime`, `type`, `caseName` |
-| “Sorted by: Last Appointment” | Use `sort=-appointmentDate` (or `-createdAt`) |
-| “Booking Type: None” | When user selects a type, add `filter[type]=preview` (or selected value) |
+| “Past” / “Upcoming” | Two calls: past = `filter[patientId]={id}` + `filter[date]` before today; upcoming = `filter[patientId]={id}` + `filter[date]` from today; or derive from list |
+| Timeline entries (date, time, booking type) | `GET /api/bookings?filter[patientId]={patientId}&sort=-date`; display `date`, `time`, `appointmentType` |
+| “Sorted by: Last Appointment” | Use `sort=-date` (or `-createdAt`) |
+| “Booking Type: None” | When user selects a type, add `filter[appointmentType]=preview` (or selected value) |
 
 ---
 
 ## 7. Request/Response Examples
 
-### Example: List Appointments for Calendar Week
+### Example: List Bookings for Patient (Appointments Tab)
 
 **Request**
 
 ```http
-GET /api/appointments?filter[appointmentDateAfter]=2024-10-23&filter[appointmentDateBefore]=2024-10-29&sort=appointmentDate&sort=startTime
+GET /api/bookings?filter[patientId]=9d4e2c1a-1234-5678-abcd-000000000001&sort=-date&perPage=20
 Authorization: Bearer <token>
 ```
 
-**Response (200 OK)** — Paginated list; `data` is an array of appointment resources with `patient` and `doctor` loaded for block display.
+**Response (200 OK)** — Paginated list; `data` is an array of booking resources. Resolve `patientId` and `userId` with patients/users endpoints for names.
 
-### Example: List Appointments for Patient (Appointments Tab)
-
-**Request**
-
-```http
-GET /api/appointments?filter[patientId]=9d4e2c1a-1234-5678-abcd-000000000001&sort=-appointmentDate&perPage=20
-Authorization: Bearer <token>
-```
-
-**Response (200 OK)** — Timeline data: each item has `appointmentDate`, `startTime`, `endTime`, `type`, `caseName`, `patient`, `doctor`.
-
-### Example: Create Appointment
+### Example: Create Booking
 
 **Request**
 
 ```http
-POST /api/appointments
+POST /api/bookings
 Content-Type: application/json
 Authorization: Bearer <token>
 ```
@@ -271,13 +249,10 @@ Authorization: Bearer <token>
 ```json
 {
   "patientId": "9d4e2c1a-1234-5678-abcd-000000000001",
-  "doctorId": "9d4e2c1a-7777-2222-cccc-444444444444",
-  "appointmentDate": "2024-10-23",
-  "startTime": "09:00",
-  "endTime": "10:00",
-  "type": "preview",
-  "description": "Initial consultation",
-  "caseName": "Root Canal Treatment"
+  "userId": "9d4e2c1a-7777-2222-cccc-444444444444",
+  "date": "2024-10-23",
+  "time": "09:00",
+  "appointmentType": "preview"
 }
 ```
 
@@ -288,15 +263,11 @@ Authorization: Bearer <token>
   "data": {
     "id": "9d4e2c1a-aaaa-1111-bbbb-555555555555",
     "patientId": "9d4e2c1a-1234-5678-abcd-000000000001",
-    "patient": { "id": "...", "name": "Ahmad", "email": "..." },
-    "doctorId": "9d4e2c1a-7777-2222-cccc-444444444444",
-    "doctor": { "id": "...", "name": "Dr. Adam Den", "email": "..." },
-    "appointmentDate": "2024-10-23",
-    "startTime": "09:00",
-    "endTime": "10:00",
-    "type": "preview",
-    "description": "Initial consultation",
-    "caseName": "Root Canal Treatment",
+    "tenantId": "9d4e2c1a-tenant-0000-0000-000000000001",
+    "userId": "9d4e2c1a-7777-2222-cccc-444444444444",
+    "date": "2024-10-23",
+    "time": "09:00",
+    "appointmentType": "preview",
     "createdAt": "2024-10-20T10:00:00.000000Z",
     "updatedAt": "2024-10-20T10:00:00.000000Z"
   },
@@ -304,25 +275,24 @@ Authorization: Bearer <token>
 }
 ```
 
-### Example: Update Appointment
+### Example: Update Booking
 
 **Request**
 
 ```http
-PATCH /api/appointments/9d4e2c1a-aaaa-1111-bbbb-555555555555
+PATCH /api/bookings/9d4e2c1a-aaaa-1111-bbbb-555555555555
 Content-Type: application/json
 Authorization: Bearer <token>
 ```
 
 ```json
 {
-  "startTime": "10:00",
-  "endTime": "11:00",
-  "type": "surgery"
+  "time": "10:00",
+  "appointmentType": "surgery"
 }
 ```
 
-**Response (200 OK)** — Full appointment resource.
+**Response (200 OK)** — Full booking resource.
 
 ---
 
@@ -331,9 +301,9 @@ Authorization: Bearer <token>
 | Status | Meaning | Typical cause |
 |--------|---------|----------------|
 | **401 Unauthorized** | Unauthenticated | Missing or invalid Bearer token |
-| **403 Forbidden** | Not allowed | User lacks permission |
-| **404 Not Found** | Resource missing | Invalid UUID or deleted appointment |
-| **422 Unprocessable Entity** | Validation failed | Invalid or missing fields (e.g. `patientId`, `appointmentDate`, `startTime`, `endTime`, `type`) |
+| **403 Forbidden** | Not allowed | User lacks permission (policy) |
+| **404 Not Found** | Resource missing | Invalid UUID or deleted booking |
+| **422 Unprocessable Entity** | Validation failed | Invalid or missing fields (e.g. `date`, `time`, `appointmentType`) |
 
 **422 response body** example:
 
@@ -342,34 +312,30 @@ Authorization: Bearer <token>
   "message": "The given data was invalid.",
   "errors": {
     "patientId": ["The selected patient id is invalid."],
-    "appointmentDate": ["The appointment date field is required."],
-    "startTime": ["The start time field is required."]
+    "date": ["The date field is required."],
+    "time": ["The time field is required."],
+    "appointmentType": ["The selected appointment type is invalid."]
   }
 }
 ```
 
-**Validation rules (recommended):**
+**Validation rules (quick reference):**
 
-- **Appointment:** `patientId` (required, UUID, exists), `doctorId` (required, UUID, exists), `appointmentDate` (required, Y-m-d), `startTime` (required, HH:mm), `endTime` (required, HH:mm, after startTime), `type` (required, enum), `description` (optional, max length TBD), `caseName` (optional).
+- **Booking:** `patientId` (optional, UUID, exists), `userId` (optional, UUID, exists), `date` (required, Y-m-d), `time` (required, string), `appointmentType` (required, enum: `preview`, `surgery`, `review`).
 
 ---
 
 ## 9. Flutter-Oriented Notes
 
 - **JSON keys:** Use **camelCase** for all request and response keys.
-- **Dates:** Use **YYYY-MM-DD** for `appointmentDate`; use **HH:mm** (24-hour) for `startTime` and `endTime`.
+- **Dates:** Use **YYYY-MM-DD** for `date`; use string for `time` (e.g. `09:00`).
 - **IDs:** All resource IDs are **UUID** strings.
 - **Pagination:** Use `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`; control page size with `perPage`.
-- **Calendar:** For weekly view, compute Monday–Sunday (or configurable first day) and request that range with `filter[appointmentDateAfter]` and `filter[appointmentDateBefore]`. Map response items to grid by `appointmentDate` + `startTime`/`endTime`.
-- **Patient “Past” / “Upcoming” counts:** If the backend does not expose these on the patient resource, derive from two calls: past = `filter[patientId]` + `filter[appointmentDateBefore]=today`; upcoming = `filter[patientId]` + `filter[appointmentDateAfter]=today` (or use a dedicated endpoint if added later).
+- **Calendar:** For weekly view, compute the date range and request bookings with `filter[createdAfter]` and `filter[createdBefore]` (or filter by `date` as supported). Map response items to grid by `date` + `time`.
+- **Patient “Past” / “Upcoming” counts:** Derive from list: past = `filter[patientId]` + `filter[createdBefore]=today` (or date filter); upcoming = `filter[patientId]` + `filter[createdAfter]=today` (or use `filter[date]` as needed).
 
 ---
 
 ## 10. Implementation Status
 
-**Backend:** The appointments API is **not yet implemented**. This contract is a specification for:
-
-1. Backend team: implement `Appointment` model, migrations, controller, requests, resources, and routes under `auth:sanctum`.
-2. Flutter team: integrate against this contract once the API is available; use mock data or stub endpoints until then.
-
-When the API is implemented, align route names and response shapes with this document and update this section (e.g. “Implemented as of version X”).
+The Bookings API is **implemented** in the backend. Base path: `/api/bookings`. Use the resource shape and filters above for integration.

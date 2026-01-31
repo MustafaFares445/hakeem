@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\BillingController;
 use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\ChronicDiseasesController;
 use App\Http\Controllers\API\ChronicMedicationsController;
@@ -34,6 +35,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/chronic_medications', ChronicMedicationsController::class);
 
     Route::apiResource('/bookings', BookingController::class);
+
+    Route::apiResource('/billings', BillingController::class);
 
     Route::apiResource('/dental-labs', DentalLabController::class);
 

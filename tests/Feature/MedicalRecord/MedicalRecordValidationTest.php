@@ -116,7 +116,7 @@ it('validates description must not exceed max length', function () {
         ->assertJsonValidationErrors(['description']);
 });
 
-it('validates totalCost and remainingAmount must be non negative numbers', function () {
+it('validates totalCost and paidAmount must be non negative numbers', function () {
     $patient = Patient::factory()->create();
 
     $payload = [
@@ -125,12 +125,11 @@ it('validates totalCost and remainingAmount must be non negative numbers', funct
         'recordType' => RecordTypeEnum::cases()[0]->value,
         'caseName' => 'Sample case',
         'totalCost' => -10,
-        'remainingAmount' => -5,
+        'paidAmount' => -5,
     ];
 
     $response = $this->postJson('/api/medical-records', $payload);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['totalCost', 'remainingAmount']);
+        ->assertJsonValidationErrors(['totalCost', 'paidAmount']);
 });
-

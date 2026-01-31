@@ -53,8 +53,6 @@ erDiagram
         date record_date
         string record_type
         string case_name
-        decimal total_cost
-        decimal remaining_amount
     }
     MedicalRecordTreatment {
         uuid id
@@ -134,7 +132,7 @@ Use these values as-is in `toothPosition` for medical record treatments. Display
 | `filter[createdAfter]` | date | Created at ≥ |
 | `filter[createdBefore]` | date | Created at ≤ |
 | `search` | string | Search in case name and description |
-| `sort` | string | `recordDate`, `-recordDate`, `caseName`, `-caseName`, `totalCost`, `-totalCost`. Default: `-created_at` |
+| `sort` | string | `recordDate`, `-recordDate`, `caseName`, `-caseName`, `createdAt`, `-createdAt`. Default: `-created_at` |
 
 **Response:** Paginated collection with `data`, `links`, `meta`. Each item follows the Medical Record resource shape below.
 
@@ -153,8 +151,8 @@ Use these values as-is in `toothPosition` for medical record treatments. Display
 | `recordType` | string | Yes | `in_clinic` or `external` |
 | `caseName` | string | Yes | Max 255 |
 | `description` | string | No | Max 1000 |
-| `totalCost` | number | No | ≥ 0 |
-| `remainingAmount` | number | No | ≥ 0 |
+| `totalCost` | number | No | ≥ 0; when provided, creates an incoming billing linked to this record |
+| `paidAmount` | number | No | ≥ 0; when provided with totalCost, creates incoming billing with this paid amount |
 
 **Response:** `201 Created`. Body includes `data` (full medical record resource with `patient`, `treatments`, `attachments` when loaded) and `message`.
 
@@ -172,7 +170,7 @@ Use these values as-is in `toothPosition` for medical record treatments. Display
 
 **`PUT /api/medical-records/{id}`** or **`PATCH /api/medical-records/{id}`**
 
-**Request body:** Same fields as create, all optional: `patientId`, `recordDate`, `recordType`, `caseName`, `description`, `totalCost`, `remainingAmount`.
+**Request body:** Same fields as create, all optional: `patientId`, `recordDate`, `recordType`, `caseName`, `description`, `totalCost`, `paidAmount`.
 
 **Response:** `200 OK`. Full medical record resource.
 
@@ -197,8 +195,9 @@ Use these values as-is in `toothPosition` for medical record treatments. Display
 | `recordType` | string | `in_clinic` or `external` |
 | `caseName` | string | Case title |
 | `description` | string \| null | Case description |
-| `totalCost` | string (decimal) | Total cost |
-| `remainingAmount` | string (decimal) | Remaining amount |
+| `totalCost` | string (decimal) \| null | Derived from linked billings when present |
+| `amountPaid` | string (decimal) \| null | Sum of paid amounts from linked billings |
+| `remainingAmount` | string (decimal) \| null | Derived (totalCost − amountPaid) when billings exist |
 | `treatments` | array | List of medical record treatment resources when loaded |
 | `attachments` | array | List of media objects when loaded |
 | `createdAt` | string | ISO date-time |

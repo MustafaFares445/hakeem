@@ -17,7 +17,9 @@ final class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /** @example "doctor_clinic" */
             'username' => ['required', 'string', 'min:3', 'max:191', Rule::exists('users', 'username')],
+            /** @example "password123" */
             'password' => ['required', 'string', 'min:1', 'max:255'],
         ];
     }

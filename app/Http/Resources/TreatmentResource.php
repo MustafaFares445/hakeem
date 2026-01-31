@@ -21,11 +21,17 @@ final class TreatmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            /** @example "9d3e8c1a-4f2b-4a5e-8c3d-1b2a3c4d5e6f" */
             'id' => $this->id,
+            /** @example "Root Canal" */
             'name' => $this->name,
+            /** @example "Standard root canal procedure" */
             'description' => $this->description,
+            /** @example 150.00 */
             'defaultCost' => $this->default_cost,
+            /** @example "2025-01-01 12:00:00" */
             'createdAt' => $this->created_at->toDateTimeString(),
+            /** @example "2025-01-31 12:00:00" */
             'updatedAt' => $this->updated_at->toDateTimeString(),
         ];
     }

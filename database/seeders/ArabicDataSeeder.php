@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\AppointmentTypeEnum;
+use App\Enums\BillingOutgoingTypeEnum;
+use App\Enums\BillingTypeEnum;
 use App\Enums\PatientGenderEnum;
 use App\Enums\RecordTypeEnum;
 use App\Enums\RoleEnum;
 use App\Enums\TenantTypes;
+use App\Models\Billing;
 use App\Models\Booking;
 use App\Models\ChronicDiseases;
 use App\Models\ChronicMedications;
@@ -384,8 +387,6 @@ final class ArabicDataSeeder extends Seeder
                 'record_type' => RecordTypeEnum::InClinic->value,
                 'case_name' => 'ملف علاجي للأسنان',
                 'description' => 'متابعة علاجية لحالة تسوس وآلام الأسنان.',
-                'total_cost' => 0,
-                'remaining_amount' => 0,
                 'tenant_id' => $tenant->id,
             ]);
 
@@ -413,6 +414,38 @@ final class ArabicDataSeeder extends Seeder
 
                 $recordTreatment->doctors()->sync([$assignedDoctor->id]);
             }
+
+            Billing::create([
+                'tenant_id' => $tenant->id,
+                'type' => BillingTypeEnum::Incoming,
+                'date' => $medicalRecord->record_date,
+                'patient_id' => $patient->id,
+                'user_id' => $doctor1->id,
+                'medical_record_id' => $medicalRecord->id,
+                'case_name' => $medicalRecord->case_name,
+                'paid_amount' => (float) fake()->randomElement([100, 200, 300, 500, 750]),
+                'total_cost' => (float) fake()->randomElement([500, 800, 1000, 1500, 2000]),
+            ]);
+        }
+
+        $outgoingItems = [
+            ['name' => 'إيبوبروفين 600', 'type' => BillingOutgoingTypeEnum::Medicine],
+            ['name' => 'منظم ضربات القلب', 'type' => BillingOutgoingTypeEnum::Equipment],
+            ['name' => 'حشوة مؤقتة', 'type' => BillingOutgoingTypeEnum::Medicine],
+            ['name' => 'معدات تعقيم', 'type' => BillingOutgoingTypeEnum::Equipment],
+        ];
+
+        foreach (range(1, 8) as $i) {
+            $item = fake()->randomElement($outgoingItems);
+            Billing::create([
+                'tenant_id' => $tenant->id,
+                'type' => BillingTypeEnum::Outgoing,
+                'date' => now()->subDays(rand(1, 30))->toDateString(),
+                'item_name' => $item['name'],
+                'quantity' => fake()->numberBetween(1, 5),
+                'amount' => (float) fake()->randomElement([20, 50, 100, 200, 500]),
+                'outgoing_type' => $item['type']->value,
+            ]);
         }
 
         $allPatients = Patient::where('tenant_id', $tenant->id)->get();

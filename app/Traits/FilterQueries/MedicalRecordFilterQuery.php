@@ -30,7 +30,6 @@ trait MedicalRecordFilterQuery
             ->allowedSorts([
                 AllowedSort::field('caseName', 'case_name'),
                 AllowedSort::field('recordDate', 'record_date'),
-                AllowedSort::field('totalCost', 'total_cost'),
             ])
             ->defaultSort('-created_at');
     }

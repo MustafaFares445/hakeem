@@ -31,7 +31,45 @@ The backend is multi-tenant. The authenticated user’s tenant context is applie
 
 ---
 
-## 2. Users Endpoints
+## 2. Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    Tenant ||--o{ User : has
+    User ||--o| Media : "primary image"
+    Tenant {
+        uuid id
+        string name
+    }
+    User {
+        uuid id
+        uuid tenant_id
+        string name
+        string username
+        string email
+    }
+    Media {
+        bigint id
+        string model_type
+        string model_id
+        string collection_name
+        string name
+        string file_name
+    }
+```
+
+- **Tenant** (1) → (N) **User** (users belong to a tenant).
+- **User** has one optional **primary image** (profile picture) via Spatie Media Library.
+
+---
+
+## 3. Enums (Source of Truth for Dropdowns)
+
+No domain enums for this feature; **roles** (e.g. doctor, admin) are managed on the backend. Use the role names returned or configured by the backend when creating/updating users via the `roles` array.
+
+---
+
+## 4. Users Endpoints
 
 ### List Users
 
@@ -117,7 +155,15 @@ Used for: Staff/doctor list, “Select Doctor(s)” in [appointments](booking-ap
 
 ---
 
-## 3. Related Endpoints and UI
+## 5. Related Endpoints (Figma Dropdowns and Context)
+
+| Purpose | Method | Endpoint | Use in UI |
+|---------|--------|----------|-----------|
+| User/staff list | GET | `/api/users` | Staff list, "Select Doctor(s)" in bookings and treatment sessions |
+| Single user | GET | `/api/users/{id}` | User profile, edit user |
+| Create user | POST | `/api/users` | New User form |
+| Update user | PUT/PATCH | `/api/users/{id}` | Edit User |
+| Delete user | DELETE | `/api/users/{id}` | Delete user |
 
 - **Booking:** “Select Doctor(s)” when creating/editing appointments — use `GET /api/users` and pass selected IDs as `doctorId` or `doctorIds`. See [Booking API contract](booking-api-contract.md).
 - **Medical Record:** “Select Doctor(s)” in treatment sessions — pass selected user IDs as `doctorIds`. See [Medical Record API contract](medical-record-api-contract.md).
@@ -125,7 +171,31 @@ Used for: Staff/doctor list, “Select Doctor(s)” in [appointments](booking-ap
 
 ---
 
-## 4. Request/Response Example
+## 6. Deep Dive: Mapping Figma to API
+
+### Screen: User List / Staff List
+
+| Figma element | API / action |
+|---------------|--------------|
+| List of users | `GET /api/users` with optional `search`, `filter[name]`, `filter[email]`, `sort`, `perPage` |
+| Search | Use `search` query parameter |
+| Click row → open profile | `GET /api/users/{id}` |
+
+### Screen: New User / Edit User Form
+
+| Figma element | API field / action |
+|---------------|--------------------|
+| Name | `name` |
+| Username | `username` |
+| Email | `email` |
+| Password | `password` (create only; not in update in current backend) |
+| Roles dropdown | `roles` — array of role names (e.g. `["doctor"]`) |
+| Profile image | `primaryImage` (file upload); use `multipart/form-data` |
+| Save | `POST /api/users` (new) or `PUT /api/users/{id}` (edit) |
+
+---
+
+## 7. Request/Response Examples
 
 ### List Users (e.g. for doctor dropdown)
 
@@ -162,27 +232,44 @@ Authorization: Bearer <token>
 
 ---
 
-## 5. Error Handling and Validation
+## 8. Error Handling and Validation
 
-| Status | Meaning |
-|--------|---------|
-| **401** | Unauthenticated |
-| **403** | Forbidden (insufficient permissions) |
-| **404** | User not found |
-| **422** | Validation failed (e.g. duplicate username/email, invalid roles) |
+| Status | Meaning | Typical cause |
+|--------|---------|----------------|
+| **401 Unauthorized** | Unauthenticated | Missing or invalid Bearer token |
+| **403 Forbidden** | Not allowed | User lacks permission (policy) |
+| **404 Not Found** | Resource missing | Invalid UUID or deleted user |
+| **422 Unprocessable Entity** | Validation failed | Invalid or missing fields; duplicate username/email; invalid roles |
 
-**Validation (summary):** Create: `name` required; `username` required, 3–191 chars, unique; `email` required, email format, unique; `roles` required array, role names must exist; `primaryImage` optional file. Update: same fields optional; uniques ignore current user.
+**422 response body** example:
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "username": ["The username has already been taken."],
+    "email": ["The email has already been taken."],
+    "roles.0": ["The selected roles.0 is invalid."]
+  }
+}
+```
+
+**Validation rules (quick reference):**
+
+- **Create:** `name` (required, max 255), `username` (required, 3–191 chars, unique), `email` (required, email, max 255, unique), `password` (optional, min 3), `roles` (required array, role names must exist in `roles`), `primaryImage` (optional file, image types, max 2048 KB).
+- **Update:** Same fields optional; unique rules for `username` and `email` ignore the current user. No `password` in update in current backend.
 
 ---
 
-## 6. Flutter-Oriented Notes
+## 9. Flutter-Oriented Notes
 
-- Use **camelCase** for all JSON keys.
-- Use **multipart/form-data** when sending `primaryImage`.
-- IDs are **UUID** strings. Pagination: `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`, `perPage`.
+- **JSON keys:** Use **camelCase** for all request and response keys.
+- **Upload:** Use **multipart/form-data** when sending `primaryImage`; other fields as form fields or JSON.
+- **IDs:** All resource IDs are **UUID** strings.
+- **Pagination:** Use `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`; control page size with `perPage`.
 
 ---
 
-## 7. Implementation Status
+## 10. Implementation Status
 
 The User Management API is **implemented** in the backend.

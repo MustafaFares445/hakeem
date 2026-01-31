@@ -17,10 +17,15 @@ final class UserUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /** @example "Dr. Ahmed Ali" */
             'name' => ['sometimes', 'string', 'max:255'],
+            /** @example "ahmed.ali" */
             'username' => ['sometimes', 'string', 'min:3', 'max:191', Rule::unique('users', 'username')->ignore($this->route('user'))],
+            /** @example "ahmed@example.com" */
             'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
+            /** @example ["doctor"] */
             'roles' => ['sometimes', 'nullable', 'array'],
+            /** @example "doctor" */
             'roles.*' => ['string', Rule::exists('roles', 'name')],
             'primaryImage' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
         ];

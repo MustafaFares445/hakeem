@@ -1,6 +1,6 @@
 # Treatments API Contract (Flutter)
 
-This document is the API contract for the **Treatments** feature in Hakeem (treatment types / services). It is intended for Flutter developers integrating against the Hakeem backend. Treatments are used as a lookup in medical record treatment sessions and can be referenced in appointments. The API is **implemented** in the backend.
+This document is the API contract for the **Treatments** feature in Hakeem (treatment types / services). It is intended for Flutter developers integrating against the Hakeem backend. It uses the Figma designs as the source of truth for UI and data points and includes examples and a deep dive into the feature. Treatments are used as a lookup in medical record treatment sessions. The API is **implemented** in the backend.
 
 ---
 
@@ -26,18 +26,41 @@ The backend is multi-tenant. The authenticated user’s tenant context is applie
 ### Request and Response Format
 
 - **Content-Type:** `application/json`
-- **Request body and query parameters:** **camelCase**
-- **Response body:** **camelCase** (Laravel API Resources)
+- **Request body and query parameters:** **camelCase** (e.g. `name`, `defaultCost`)
+- **Response body:** **camelCase** (Laravel API Resources return camelCase keys)
 
 ---
 
-## 2. Treatments Endpoints
+## 2. Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    MedicalRecordTreatment }o--|| Treatment : "treatment type"
+    Treatment {
+        uuid id
+        string name
+        string description
+        decimal default_cost
+    }
+```
+
+- **Treatment** is a lookup entity. **MedicalRecordTreatment** (1) → (1) **Treatment** (treatment type). See [Medical Record API contract](medical-record-api-contract.md).
+
+---
+
+## 3. Enums (Source of Truth for Dropdowns)
+
+No enums for this feature. Treatment types are free-form (name, description, defaultCost).
+
+---
+
+## 4. Treatments Endpoints
 
 ### List Treatments
 
 **`GET /api/treatments`**
 
-Used for: **“Treatment Name” dropdown** in medical record treatment sessions; appointment type/label. See [Medical Record API contract](medical-record-api-contract.md) and [Booking API contract](booking-api-contract.md).
+Used for: **“Treatment Name” dropdown** in medical record treatment sessions. See [Medical Record API contract](medical-record-api-contract.md) and [Booking API contract](booking-api-contract.md).
 
 **Query parameters:**
 
@@ -110,17 +133,29 @@ Used for: **“Treatment Name” dropdown** in medical record treatment sessions
 
 ---
 
-## 3. Related Endpoints and UI
+## 5. Related Endpoints (Figma Dropdowns and Context)
 
-- **Medical Record – treatment session “Treatment Name”:** Use `GET /api/treatments` for dropdown; pass selected ID as `treatmentId` when creating/updating a medical record treatment. See [Medical Record API contract](medical-record-api-contract.md).
-- **Booking – appointment type:** Treatments may be used to label or categorize appointments; see [Booking API contract](booking-api-contract.md).
-- **Tooth Details card:** May display treatment name from the treatment’s `treatment` relation.
+| Purpose | Method | Endpoint | Use in UI |
+|---------|--------|----------|-----------|
+| Treatment Name dropdown (medical record treatment session) | GET | `/api/treatments` | “Treatment Name” in treatment session; pass selected ID as `treatmentId` when creating/updating a medical record treatment |
+| Tooth Details card | GET | `/api/medical-record-treatments/{id}` (with `treatment` loaded) | Display treatment name from relation |
+| See Medical Record API | — | [Medical Record API contract](medical-record-api-contract.md) | Treatment sessions and tooth overview |
 
 ---
 
-## 4. Request/Response Example
+## 6. Deep Dive: Mapping Figma to API
 
-### List Treatments (for dropdown)
+### Screen: Medical Record – Treatment Session “Treatment Name”
+
+| Figma element | API / action |
+|----------------|--------------|
+| “Treatment Name” dropdown | `GET /api/treatments?perPage=50&sort=name`; pass selected `id` as `treatmentId` in `POST /api/medical-record-treatments` or `PUT /api/medical-record-treatments/{id}` |
+
+---
+
+## 7. Request/Response Examples
+
+### Example: List Treatments (for dropdown)
 
 **Request**
 
@@ -131,7 +166,7 @@ Authorization: Bearer <token>
 
 **Response (200 OK)** — Paginated list; `data` is an array of treatment resources.
 
-### Create Treatment
+### Example: Create Treatment
 
 **Request**
 
@@ -149,30 +184,60 @@ Authorization: Bearer <token>
 }
 ```
 
-**Response (201 Created)** — `data` contains full treatment resource; `message` in body.
+**Response (201 Created)**
+
+```json
+{
+  "data": {
+    "id": "9d4e2c1a-5678-4321-abcd-111111111111",
+    "name": "Initial Cleaning & Cavity Preparation",
+    "description": "Standard cleaning and cavity prep",
+    "defaultCost": "150.00",
+    "createdAt": "2025-01-15T10:00:00.000000Z",
+    "updatedAt": "2025-01-15T10:00:00.000000Z"
+  },
+  "message": "Created successfully"
+}
+```
 
 ---
 
-## 5. Error Handling and Validation
+## 8. Error Handling and Validation
 
-| Status | Meaning |
-|--------|---------|
-| **401** | Unauthenticated |
-| **403** | Forbidden |
-| **404** | Treatment not found |
-| **422** | Validation failed (e.g. missing name, invalid defaultCost) |
+| Status | Meaning | Typical cause |
+|--------|---------|----------------|
+| **401 Unauthorized** | Unauthenticated | Missing or invalid Bearer token |
+| **403 Forbidden** | Not allowed | User lacks permission (policy) |
+| **404 Not Found** | Resource missing | Invalid UUID or deleted treatment |
+| **422 Unprocessable Entity** | Validation failed | Invalid or missing fields (e.g. `name`, `defaultCost`) |
 
-**Validation (summary):** Create: `name` required, max 255; `description` optional, max 1000; `defaultCost` optional, numeric, min 0. Update: same fields optional.
+**422 response body** example:
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "name": ["The name field is required."],
+    "defaultCost": ["The default cost must be at least 0."]
+  }
+}
+```
+
+**Validation rules (quick reference):**
+
+- **Treatment:** `name` (required, max 255), `description` (optional, max 1000), `defaultCost` (optional, numeric, min 0). Update: same fields optional.
 
 ---
 
-## 6. Flutter-Oriented Notes
+## 9. Flutter-Oriented Notes
 
-- Use **camelCase** for all JSON keys. IDs are **UUID** strings.
-- `defaultCost` is returned as a string (decimal). Pagination: `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`, `perPage`.
+- **JSON keys:** Use **camelCase** for all request and response keys.
+- **IDs:** All resource IDs are **UUID** strings.
+- **Pagination:** Use `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`; control page size with `perPage`.
+- `defaultCost` is returned as a string (decimal).
 
 ---
 
-## 7. Implementation Status
+## 10. Implementation Status
 
 The Treatments API is **implemented** in the backend.

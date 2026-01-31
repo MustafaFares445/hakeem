@@ -1,6 +1,6 @@
 # Chronic Diseases API Contract (Flutter)
 
-This document is the API contract for the **Chronic Diseases** feature in Hakeem (patient-scoped chronic conditions). It is intended for Flutter developers integrating against the Hakeem backend. The API is **implemented** in the backend.
+This document is the API contract for the **Chronic Diseases** feature in Hakeem (patient-scoped chronic conditions). It is intended for Flutter developers integrating against the Hakeem backend. It uses the Figma designs as the source of truth for UI and data points and includes examples and a deep dive into the feature. The API is **implemented** in the backend.
 
 ---
 
@@ -26,12 +26,39 @@ The backend is multi-tenant. The authenticated user’s tenant context is applie
 ### Request and Response Format
 
 - **Content-Type:** `application/json`
-- **Request body and query parameters:** **camelCase**
-- **Response body:** **camelCase** (Laravel API Resources)
+- **Request body and query parameters:** **camelCase** (e.g. `patientId`, `title`)
+- **Response body:** **camelCase** (Laravel API Resources return camelCase keys)
 
 ---
 
-## 2. Chronic Diseases Endpoints
+## 2. Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    Patient ||--o{ ChronicDiseases : has
+    Patient {
+        uuid id
+        string name
+        string email
+    }
+    ChronicDiseases {
+        uuid id
+        uuid patient_id
+        string title
+    }
+```
+
+- **Patient** (1) → (N) **ChronicDiseases** (patient-scoped chronic conditions)
+
+---
+
+## 3. Enums (Source of Truth for Dropdowns)
+
+No enums for this feature. The **title** field is free text (condition title/description).
+
+---
+
+## 4. Chronic Diseases Endpoints
 
 ### List Chronic Diseases
 
@@ -44,7 +71,7 @@ Used for: **Patient profile – “Chronic Diseases” tab**; filter by `patient
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `perPage` | integer | Page size (1–100). Default: 20 |
-| `filter[patientId]` | string (UUID) | Filter by patient |
+| `filter[patientId]` | UUID | Filter by patient |
 | `filter[title]` | string | Partial match on title |
 | `filter[createdAfter]` | date | Created at ≥ |
 | `filter[createdBefore]` | date | Created at ≤ |
@@ -65,7 +92,7 @@ Used for: **New Patient form** or **Patient profile – Chronic Diseases** “+ 
 
 | Field | Type | Required | Validation |
 |-------|------|----------|------------|
-| `patientId` | string (UUID) | Yes | Must exist in `patients` |
+| `patientId` | UUID | Yes | Must exist in `patients` |
 | `title` | string | Yes | Max 255 |
 
 **Response:** `201 Created`. Full chronic disease resource in `data` and `message`.
@@ -84,7 +111,7 @@ Used for: **New Patient form** or **Patient profile – Chronic Diseases** “+ 
 
 **`PUT /api/chronic_diseases/{id}`** or **`PATCH /api/chronic_diseases/{id}`**
 
-**Request body:** Same fields as create, both optional: `patientId` (required when present), `title` (required when present).
+**Request body:** Same fields as create, all optional: `patientId`, `title`. When provided, same validation applies.
 
 **Response:** `200 OK`. Full chronic disease resource.
 
@@ -110,16 +137,36 @@ Used for: **New Patient form** or **Patient profile – Chronic Diseases** “+ 
 
 ---
 
-## 3. Related Endpoints and UI
+## 5. Related Endpoints (Figma Dropdowns and Patient Context)
 
-- **Patient profile – Chronic Diseases tab:** `GET /api/chronic_diseases?filter[patientId]={patientId}`. See [Patient Management API contract](patient-management-api-contract.md).
-- **New Patient form – Chronic Diseases “+ Add”:** After creating the patient, call `POST /api/chronic_diseases` with the new `patientId` for each entry.
+| Purpose | Method | Endpoint | Use in UI |
+|---------|--------|----------|-----------|
+| Patient profile – Chronic Diseases tab | GET | `/api/chronic_diseases?filter[patientId]={patientId}` | List patient’s chronic diseases |
+| Single patient | GET | `/api/patients/{id}` | Patient context; see [Patient Management API contract](patient-management-api-contract.md) |
+| New Patient form – Chronic Diseases “+ Add” | POST | `/api/chronic_diseases` | After creating patient, call with new `patientId` for each entry |
 
 ---
 
-## 4. Request/Response Example
+## 6. Deep Dive: Mapping Figma to API
 
-### List Chronic Diseases for a Patient
+### Screen: Patient Profile – “Chronic Diseases” Tab
+
+| Figma element | API / action |
+|----------------|--------------|
+| List of chronic diseases | `GET /api/chronic_diseases?filter[patientId]={patientId}&sort=-created_at` |
+| “+ Add” | `POST /api/chronic_diseases` with `patientId` and `title` |
+| Edit entry | `PUT /api/chronic_diseases/{id}` with `patientId`, `title` |
+| Delete entry | `DELETE /api/chronic_diseases/{id}` |
+
+### Screen: New Patient Form – Chronic Diseases Section
+
+After creating the patient via `POST /api/patients`, call `POST /api/chronic_diseases` for each chronic disease entry with the returned `patientId`.
+
+---
+
+## 7. Request/Response Examples
+
+### Example: List Chronic Diseases for a Patient
 
 **Request**
 
@@ -130,7 +177,7 @@ Authorization: Bearer <token>
 
 **Response (200 OK)** — Paginated list; `data` is an array of chronic disease resources.
 
-### Create Chronic Disease
+### Example: Create Chronic Disease
 
 **Request**
 
@@ -143,35 +190,63 @@ Authorization: Bearer <token>
 ```json
 {
   "patientId": "9d4e2c1a-1234-5678-abcd-000000000001",
-  "title": "Ibuprofen 200 mg, take 3 times a day with food for 3 days."
+  "title": "Type 2 diabetes – controlled with diet and metformin"
 }
 ```
 
-**Response (201 Created)** — `data` contains full chronic disease resource; `message` in body.
+**Response (201 Created)**
+
+```json
+{
+  "data": {
+    "id": "9d4e2c1a-5678-4321-abcd-111111111111",
+    "patientId": "9d4e2c1a-1234-5678-abcd-000000000001",
+    "title": "Type 2 diabetes – controlled with diet and metformin",
+    "createdAt": "2025-01-15T10:00:00.000000Z",
+    "updatedAt": "2025-01-15T10:00:00.000000Z"
+  },
+  "message": "Created successfully"
+}
+```
 
 ---
 
-## 5. Error Handling and Validation
+## 8. Error Handling and Validation
 
-| Status | Meaning |
-|--------|---------|
-| **401** | Unauthenticated |
-| **403** | Forbidden |
-| **404** | Chronic disease not found |
-| **422** | Validation failed (e.g. invalid or missing patientId, title) |
+| Status | Meaning | Typical cause |
+|--------|---------|----------------|
+| **401 Unauthorized** | Unauthenticated | Missing or invalid Bearer token |
+| **403 Forbidden** | Not allowed | User lacks permission (policy) |
+| **404 Not Found** | Resource missing | Invalid UUID or deleted chronic disease |
+| **422 Unprocessable Entity** | Validation failed | Invalid or missing fields (e.g. `patientId`, `title`) |
 
-**Validation (summary):** Create: `patientId` required, UUID, must exist in patients; `title` required, max 255. Update: same fields optional but when provided must pass same rules.
+**422 response body** example:
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "patientId": ["The selected patient id is invalid."],
+    "title": ["The title field is required."]
+  }
+}
+```
+
+**Validation rules (quick reference):**
+
+- **Chronic disease:** `patientId` (required, UUID, exists in patients), `title` (required, max 255). Update: same fields optional but when provided must pass same rules.
 
 ---
 
-## 6. Flutter-Oriented Notes
+## 9. Flutter-Oriented Notes
 
-- Use **camelCase** for all JSON keys. IDs are **UUID** strings.
-- Pagination: `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`, `perPage`.
+- **JSON keys:** Use **camelCase** for all request and response keys.
+- **IDs:** All resource IDs are **UUID** strings.
+- **Pagination:** Use `meta.current_page`, `meta.last_page`, `links.next` / `links.prev`; control page size with `perPage`.
 - For the patient’s Chronic Diseases tab, always filter by `patientId`.
 
 ---
 
-## 7. Implementation Status
+## 10. Implementation Status
 
 The Chronic Diseases API is **implemented** in the backend.

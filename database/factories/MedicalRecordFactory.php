@@ -20,16 +20,12 @@ final class MedicalRecordFactory extends Factory
      */
     public function definition(): array
     {
-        $totalCost = fake()->numberBetween(500, 10000);
-
         return [
             'patient_id' => Patient::factory(),
             'record_date' => fake()->date(),
             'record_type' => fake()->randomElement(array_map(fn ($case) => $case->value, RecordTypeEnum::cases())),
             'case_name' => fake()->words(3, asText: true),
             'description' => fake()->paragraph(),
-            'total_cost' => $totalCost,
-            'remaining_amount' => fake()->numberBetween(0, $totalCost),
         ];
     }
 }

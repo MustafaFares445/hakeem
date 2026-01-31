@@ -33,7 +33,5 @@ final class MedicalRecordData extends Data
         public ?string $caseName,
         #[Max(1000)]
         public ?string $description,
-        public ?string $totalCost,
-        public ?string $remainingAmount,
     ) {}
 }
