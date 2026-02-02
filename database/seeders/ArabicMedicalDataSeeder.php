@@ -20,6 +20,7 @@ use App\Models\Tenant;
 use App\Models\Treatment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\UploadedFile;
 
 final class ArabicMedicalDataSeeder extends Seeder
 {
@@ -48,6 +49,10 @@ final class ArabicMedicalDataSeeder extends Seeder
                 'description' => 'متابعة علاجية لحالة تسوس وآلام الأسنان.',
                 'tenant_id' => $tenant->id,
             ]);
+
+            for ($i = 0; $i < rand(0, 2); $i++) {
+                $medicalRecord->addMedia(UploadedFile::fake()->create('attachment.pdf', 100))->toMediaCollection('documents');
+            }
 
             $treatmentCount = rand(1, 3);
 

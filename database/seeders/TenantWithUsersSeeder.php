@@ -9,6 +9,7 @@ use App\Enums\TenantTypes;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -55,6 +56,7 @@ final class TenantWithUsersSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $systemAdmin->assignRole($systemAdminRole);
+        $systemAdmin->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $doctor1 = User::create([
             'name' => 'دكتور العيادة',
@@ -66,6 +68,7 @@ final class TenantWithUsersSeeder extends Seeder
             'tenant_id' => $tenant->id,
         ]);
         $doctor1->assignRole($doctorRole);
+        $doctor1->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $doctor2 = User::create([
             'name' => 'د. خالد سعد الدوسري',
@@ -77,6 +80,7 @@ final class TenantWithUsersSeeder extends Seeder
             'tenant_id' => $tenant->id,
         ]);
         $doctor2->assignRole($doctorRole);
+        $doctor2->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $secretary1 = User::create([
             'name' => 'سكريتاري العيادة',
@@ -88,6 +92,7 @@ final class TenantWithUsersSeeder extends Seeder
             'tenant_id' => $tenant->id,
         ]);
         $secretary1->assignRole($secretariatRole);
+        $secretary1->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $secretary2 = User::create([
             'name' => 'نورا محمد الحربي',
@@ -99,5 +104,6 @@ final class TenantWithUsersSeeder extends Seeder
             'tenant_id' => $tenant->id,
         ]);
         $secretary2->assignRole($secretariatRole);
+        $secretary2->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
     }
 }

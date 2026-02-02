@@ -10,6 +10,7 @@ use App\Models\ChronicMedications;
 use App\Models\Patient;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\UploadedFile;
 
 final class ArabicPatientsSeeder extends Seeder
 {
@@ -164,6 +165,7 @@ final class ArabicPatientsSeeder extends Seeder
 
         foreach ($patients as $patientData) {
             $patient = Patient::create($patientData);
+            $patient->addMedia(UploadedFile::fake()->image('patient.jpg', 100, 100))->toMediaCollection('primary-image');
 
             $diseaseCount = rand(1, 3);
             for ($i = 0; $i < $diseaseCount; $i++) {

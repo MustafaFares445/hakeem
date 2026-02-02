@@ -34,6 +34,7 @@ final readonly class BookingController
         $this->authorize('viewAny', Booking::class);
 
         $bookings = Booking::getQuery()
+            ->with('patient.media', 'user.media')
             ->paginate($request->input('perPage', 20));
 
         return BookingResource::collection($bookings)
@@ -96,4 +97,3 @@ final readonly class BookingController
             ->additional(['message' => ResponseMessages::DELETED->message()]);
     }
 }
-

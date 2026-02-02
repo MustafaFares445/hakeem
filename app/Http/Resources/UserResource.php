@@ -27,8 +27,6 @@ final class UserResource extends JsonResource
             'name' => $this->name,
             /** @example "ahmed@example.com" */
             'email' => $this->email,
-            /** @example "2025-01-01 12:00:00" */
-            'emailVerifiedAt' => $this->email_verified_at,
             'primaryImage' => MediaResource::make($this->whenLoaded('media', fn () => $this->getFirstMedia('primary-image'))),
             'tenant' => TenantResource::make($this->whenLoaded('tenant')),
             /** @example "2025-01-01 12:00:00" */

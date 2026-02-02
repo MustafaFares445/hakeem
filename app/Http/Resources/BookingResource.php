@@ -24,6 +24,10 @@ final class BookingResource extends JsonResource
             /** @example "9d3e8c1a-4f2b-4a5e-8c3d-1b2a3c4d5e6f" */
             'id' => $this->id,
             /** @example "9d3e8c1a-4f2b-4a5e-8c3d-1b2a3c4d5e6f" */
+            'patient' => PatientResource::make($this->whenLoaded('patient')),
+            /** @example "9d3e8c1a-4f2b-4a5e-8c3d-1b2a3c4d5e6f" */
+            'user' => UserResource::make($this->whenLoaded('user')),
+            /** @example "9d3e8c1a-4f2b-4a5e-8c3d-1b2a3c4d5e6f" */
             'patientId' => $this->patient_id,
             /** @example "9d3e8c1a-4f2b-4a5e-8c3d-1b2a3c4d5e6f" */
             'tenantId' => $this->tenant_id,
