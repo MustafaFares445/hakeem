@@ -21,7 +21,9 @@ final class MedicalRecordFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_id' => Patient::factory(),
+            'patient_id' => function (array $attributes) {
+                return Patient::factory()->create(['tenant_id' => $attributes['tenant_id'] ?? null])->id;
+            },
             'record_date' => fake()->date(),
             'record_type' => fake()->randomElement(array_map(fn ($case) => $case->value, RecordTypeEnum::cases())),
             'case_name' => fake()->words(3, asText: true),

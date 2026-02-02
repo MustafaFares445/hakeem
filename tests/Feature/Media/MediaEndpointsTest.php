@@ -49,7 +49,7 @@ it('creates media for patient', function () {
 
 it('creates media for medical record', function () {
     $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
-    $medicalRecord = MedicalRecord::factory()->create(['patient_id' => $patient->id]);
+    $medicalRecord = MedicalRecord::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
     $file = UploadedFile::fake()->create('attachment.pdf', 100);
 
     $response = $this->post('/api/media', [

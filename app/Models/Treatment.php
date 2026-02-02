@@ -16,6 +16,7 @@ final class Treatment extends Model
     use BelongsToTenant, HasFactory, HasUuids, TreatmentFilterQuery;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'description',
         'default_cost',

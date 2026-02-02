@@ -16,6 +16,7 @@ final class DentalLab extends Model
     use BelongsToTenant, DentalLabFilterQuery, HasFactory, HasUuids;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'phone',
         'address',

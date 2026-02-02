@@ -19,7 +19,9 @@ final class ChronicMedicationsFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_id' => \App\Models\Patient::factory(),
+            'patient_id' => function (array $attributes) {
+                return \App\Models\Patient::factory()->create(['tenant_id' => $attributes['tenant_id'] ?? null])->id;
+            },
             'title' => fake()->sentence(),
         ];
     }
