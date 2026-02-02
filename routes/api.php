@@ -51,7 +51,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/medical-record-treatments', MedicalRecordTreatmentController::class);
 
     Route::apiResource('media', MediaController::class)->only(['index', 'store', 'show', 'destroy']);
-
-    Route::get('/clinic', [ClinicController::class, 'show']);
-    Route::put('/clinic', [ClinicController::class, 'update']);
 });

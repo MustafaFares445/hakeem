@@ -49,7 +49,11 @@ final class ArabicDataSeeder extends Seeder
             'created_at' => now(),
         ]);
 
-        $tenant = Tenant::first();
+        $tenant = Tenant::firstOrFail();
+
+        $tenant->domains()->create([
+            'domain' => 'alhakeem-clinic.'.config('tenancy.default_domain'),
+        ]);
 
         foreach (RoleEnum::cases() as $role) {
             SpatieRole::firstOrCreate(

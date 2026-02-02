@@ -30,7 +30,6 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
         'tenant_id',
         'data',
         'domain_name',
-        // explicit clinic fields
         'phone_number',
         'phone_number2',
         'specialties',

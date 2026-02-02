@@ -21,6 +21,8 @@ return [
         'localhost',
     ],
 
+    'default_domain' => env('APP_URL' , 'https://hakeem.mustafafares.com'),
+
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
      * Their responsibility is making Laravel features tenant-aware.
