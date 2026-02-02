@@ -8,22 +8,17 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'patients');
     Sanctum::actingAs($user);
 });
 
 it('lists patients', function () {
-    Patient::factory()->count(3)->create();
+    Patient::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients');
 
@@ -68,7 +63,7 @@ it('creates a patient', function () {
 });
 
 it('shows a patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/patients/{$patient->id}");
     $response->assertOk()
@@ -94,7 +89,7 @@ it('shows a patient', function () {
 });
 
 it('updates a patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'name' => 'Sample name updated',
@@ -114,7 +109,7 @@ it('updates a patient', function () {
 });
 
 it('deletes a patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/patients/{$patient->id}");
     $response->assertOk()

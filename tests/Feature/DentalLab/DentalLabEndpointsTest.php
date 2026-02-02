@@ -7,22 +7,17 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'dental_labs');
     Sanctum::actingAs($user);
 });
 
 it('lists dental labs', function () {
-    DentalLab::factory()->count(3)->create();
+    DentalLab::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/dental-labs');
 
@@ -54,7 +49,7 @@ it('creates a dental lab', function () {
 });
 
 it('shows a dental lab', function () {
-    $dentalLab = DentalLab::factory()->create();
+    $dentalLab = DentalLab::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/dental-labs/{$dentalLab->id}");
     $response->assertOk()
@@ -68,7 +63,7 @@ it('shows a dental lab', function () {
 });
 
 it('updates a dental lab', function () {
-    $dentalLab = DentalLab::factory()->create();
+    $dentalLab = DentalLab::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'name' => 'Updated Dental Lab',
@@ -82,7 +77,7 @@ it('updates a dental lab', function () {
 });
 
 it('deletes a dental lab', function () {
-    $dentalLab = DentalLab::factory()->create();
+    $dentalLab = DentalLab::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/dental-labs/{$dentalLab->id}");
     $response->assertOk()
@@ -127,4 +122,3 @@ it('returns 404 when dental lab ID format is invalid', function () {
 
     $response->assertNotFound();
 });
-

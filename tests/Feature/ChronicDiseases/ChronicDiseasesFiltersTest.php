@@ -3,26 +3,23 @@
 declare(strict_types=1);
 
 use App\Models\ChronicDiseases;
+use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $this->patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'chronic_diseases');
     Sanctum::actingAs($user);
 });
 
 it('filters chronic diseases by search term', function () {
-    ChronicDiseases::factory()->create(['title' => 'Target chronicDiseases']);
-    ChronicDiseases::factory()->create(['title' => 'Other chronicDiseases']);
+    ChronicDiseases::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $this->patient->id, 'title' => 'Target chronicDiseases']);
+    ChronicDiseases::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $this->patient->id, 'title' => 'Other chronicDiseases']);
 
     $response = $this->withHeader('Accept-Language', 'en')
         ->getJson('/api/chronic_diseases?search=Target');
@@ -42,8 +39,8 @@ it('filters chronic diseases by search term', function () {
 });
 
 it('sorts chronic diseases', function () {
-    ChronicDiseases::factory()->create(['title' => 'A chronicDiseases']);
-    ChronicDiseases::factory()->create(['title' => 'Z chronicDiseases']);
+    ChronicDiseases::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $this->patient->id, 'title' => 'A chronicDiseases']);
+    ChronicDiseases::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $this->patient->id, 'title' => 'Z chronicDiseases']);
 
     $response = $this->getJson('/api/chronic_diseases?sort=title');
     $response->assertOk();
@@ -67,8 +64,8 @@ it('sorts chronic diseases', function () {
 });
 
 it('filters chronic diseases by date range', function () {
-    ChronicDiseases::factory()->create(['created_at' => now()->subDays(5)]);
-    ChronicDiseases::factory()->create(['created_at' => now()]);
+    ChronicDiseases::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $this->patient->id, 'created_at' => now()->subDays(5)]);
+    ChronicDiseases::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $this->patient->id, 'created_at' => now()]);
 
     $after = now()->subDays(2)->format('Y-m-d');
     $before = now()->format('Y-m-d');
@@ -80,7 +77,7 @@ it('filters chronic diseases by date range', function () {
 });
 
 it('paginates filtered chronic diseases', function () {
-    ChronicDiseases::factory()->count(15)->create();
+    ChronicDiseases::factory()->count(15)->create(['tenant_id' => $this->tenant->id, 'patient_id' => $this->patient->id]);
 
     $response = $this->getJson('/api/chronic_diseases?perPage=5&page=1');
 

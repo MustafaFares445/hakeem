@@ -6,22 +6,17 @@ use App\Models\Billing;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'billings');
     Sanctum::actingAs($user);
 });
 
 it('paginates billings with default per page', function () {
-    Billing::factory()->count(25)->create();
+    Billing::factory()->count(25)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/billings');
 
@@ -33,7 +28,7 @@ it('paginates billings with default per page', function () {
 });
 
 it('paginates billings with custom per page', function () {
-    Billing::factory()->count(15)->create();
+    Billing::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/billings?perPage=5');
 

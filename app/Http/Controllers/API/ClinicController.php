@@ -8,7 +8,6 @@ use App\Http\Requests\Clinic\ClinicUpdateRequest;
 use App\Http\Resources\TenantResource;
 use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Mrmarchone\LaravelAutoCrud\Traits\MessageTrait;
 
 final class ClinicController
@@ -18,11 +17,9 @@ final class ClinicController
     /**
      * Return current tenant (clinic) information for the authenticated user.
      */
-    public function show(Request $request): TenantResource
+    public function show(): TenantResource
     {
-        $tenant = $request->user()?->tenant ?? tenant();
-
-        return TenantResource::make($tenant)->additional(['message' => __('Clinic fetched successfully')]);
+        return TenantResource::make(tenant())->additional(['message' => __('Clinic fetched successfully')]);
     }
 
     /**
@@ -31,8 +28,8 @@ final class ClinicController
      */
     public function update(ClinicUpdateRequest $request): TenantResource
     {
-        /** @var Tenant|null $tenant */
-        $tenant = $request->user()?->tenant ?? tenant();
+        /** @var Tenant $tenant */
+        $tenant = tenant();
 
         $validated = $request->validated();
         // Map incoming camelCase API fields to snake_case DB columns

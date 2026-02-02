@@ -6,23 +6,18 @@ use App\Enums\RoleEnum;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 });
 
 it('forbids unauthorized user from viewing users', function () {
     // Arrange
-    $user = User::factory()->create();
-    User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act
@@ -34,14 +29,14 @@ it('forbids unauthorized user from viewing users', function () {
 
 it('forbids unauthorized user from creating user', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
         'name' => 'Sample name',
         'email' => 'test@example.com',
         'username' => 'testuser',
-        'roles' => [RoleEnum::cases()[0]->value,]
+        'roles' => [RoleEnum::cases()[0]->value],
     ];
 
     // Act
@@ -53,15 +48,15 @@ it('forbids unauthorized user from creating user', function () {
 
 it('forbids unauthorized user from updating user', function () {
     // Arrange
-    $user = User::factory()->create();
-    $model = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
         'name' => 'Sample name',
         'email' => 'test@example.com',
         'username' => 'testuser',
-        'roles' => [RoleEnum::cases()[0]->value,]
+        'roles' => [RoleEnum::cases()[0]->value],
     ];
 
     // Act
@@ -73,8 +68,8 @@ it('forbids unauthorized user from updating user', function () {
 
 it('forbids unauthorized user from deleting user', function () {
     // Arrange
-    $user = User::factory()->create();
-    $model = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act

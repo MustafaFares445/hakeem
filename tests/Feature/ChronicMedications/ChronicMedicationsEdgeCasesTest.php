@@ -5,16 +5,11 @@ declare(strict_types=1);
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'chronic_medications');
     Sanctum::actingAs($user);
 });
@@ -32,7 +27,7 @@ it('handles empty payload gracefully', function () {
 
 it('sanitizes SQL injection attempts in string fields', function () {
     // Arrange
-    $patient = App\Models\Patient::factory()->create();
+    $patient = App\Models\Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $payload = [
         'patientId' => $patient->id,
         'title' => "'; DROP TABLE chronic_medications; --",
@@ -48,7 +43,7 @@ it('sanitizes SQL injection attempts in string fields', function () {
 
 it('sanitizes XSS attempts in string fields', function () {
     // Arrange
-    $patient = App\Models\Patient::factory()->create();
+    $patient = App\Models\Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $payload = [
         'patientId' => $patient->id,
         'title' => '<script>alert("XSS")</script>',
@@ -64,7 +59,7 @@ it('sanitizes XSS attempts in string fields', function () {
 
 it('handles max length boundary for patientId', function () {
     // Arrange
-    $patient = App\Models\Patient::factory()->create();
+    $patient = App\Models\Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $payload = [
         'patientId' => $patient->id,
         'title' => 'Sample title',

@@ -7,22 +7,17 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantUserPermissions($user);
     Sanctum::actingAs($user);
 });
 
 it('lists users', function () {
-    User::factory()->count(3)->create();
+    User::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/users');
 
@@ -44,7 +39,7 @@ it('creates a user', function () {
         'username' => 'testuser',
         'email' => 'test@example.com',
         'password' => 'password',
-        'roles' => [RoleEnum::cases()[0]->value]
+        'roles' => [RoleEnum::cases()[0]->value],
     ];
 
     $response = $this->postJson('/api/users', $payload);
@@ -54,7 +49,7 @@ it('creates a user', function () {
 });
 
 it('shows a user', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/users/{$user->id}");
     $response->assertOk()
@@ -72,7 +67,7 @@ it('shows a user', function () {
 });
 
 it('updates a user', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'name' => 'Sample name updated',
@@ -87,7 +82,7 @@ it('updates a user', function () {
 });
 
 it('deletes a user', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/users/{$user->id}");
     $response->assertOk()

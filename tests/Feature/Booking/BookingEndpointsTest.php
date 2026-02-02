@@ -8,22 +8,17 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'bookings');
     Sanctum::actingAs($user);
 });
 
 it('lists bookings', function () {
-    Booking::factory()->count(3)->create();
+    Booking::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/bookings');
 
@@ -61,7 +56,7 @@ it('creates a booking', function () {
 });
 
 it('shows a booking', function () {
-    $booking = Booking::factory()->create();
+    $booking = Booking::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/bookings/{$booking->id}");
     $response->assertOk()
@@ -80,7 +75,7 @@ it('shows a booking', function () {
 });
 
 it('updates a booking', function () {
-    $booking = Booking::factory()->create();
+    $booking = Booking::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'patientId' => null,
@@ -97,7 +92,7 @@ it('updates a booking', function () {
 });
 
 it('deletes a booking', function () {
-    $booking = Booking::factory()->create();
+    $booking = Booking::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/bookings/{$booking->id}");
     $response->assertOk()

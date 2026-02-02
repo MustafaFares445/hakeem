@@ -7,22 +7,17 @@ use App\Models\Treatment;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'treatments');
     Sanctum::actingAs($user);
 });
 
 it('lists treatments', function () {
-    Treatment::factory()->count(3)->create();
+    Treatment::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/treatments');
 
@@ -54,7 +49,7 @@ it('creates a treatment', function () {
 });
 
 it('shows a treatment', function () {
-    $treatment = Treatment::factory()->create();
+    $treatment = Treatment::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/treatments/{$treatment->id}");
     $response->assertOk()
@@ -68,7 +63,7 @@ it('shows a treatment', function () {
 });
 
 it('updates a treatment', function () {
-    $treatment = Treatment::factory()->create();
+    $treatment = Treatment::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'name' => 'Updated Treatment Name',
@@ -82,7 +77,7 @@ it('updates a treatment', function () {
 });
 
 it('deletes a treatment', function () {
-    $treatment = Treatment::factory()->create();
+    $treatment = Treatment::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/treatments/{$treatment->id}");
     $response->assertOk()
@@ -127,4 +122,3 @@ it('returns 404 when treatment ID format is invalid', function () {
 
     $response->assertNotFound();
 });
-

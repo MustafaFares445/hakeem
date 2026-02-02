@@ -11,7 +11,6 @@ final class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RolesSeeder::class,
             Permissions\UserPermissionsSeeder::class,
             Permissions\PatientPermissionsSeeder::class,
             Permissions\ChronicDiseasesPermissionsSeeder::class,
@@ -23,6 +22,8 @@ final class RolesAndPermissionsSeeder extends Seeder
             Permissions\FillerMaterialPermissionsSeeder::class,
             Permissions\BillingPermissionsSeeder::class,
             Permissions\MediaPermissionsSeeder::class,
+            Permissions\BookingPermissionsSeeder::class,
+            RolesSeeder::class,
         ]);
     }
 }

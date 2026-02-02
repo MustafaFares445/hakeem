@@ -7,24 +7,19 @@ use App\Models\Billing;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'billings');
     Sanctum::actingAs($user);
 });
 
 it('filters billings by type', function () {
-    Billing::factory()->incoming()->create();
-    Billing::factory()->outgoing()->create();
-    Billing::factory()->outgoing()->create();
+    Billing::factory()->incoming()->create(['tenant_id' => $this->tenant->id]);
+    Billing::factory()->outgoing()->create(['tenant_id' => $this->tenant->id]);
+    Billing::factory()->outgoing()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/billings?filter[type]=incoming');
 
@@ -34,8 +29,8 @@ it('filters billings by type', function () {
 });
 
 it('sorts billings by date', function () {
-    Billing::factory()->create(['date' => '2025-01-01']);
-    Billing::factory()->create(['date' => '2025-01-15']);
+    Billing::factory()->create(['tenant_id' => $this->tenant->id, 'date' => '2025-01-01']);
+    Billing::factory()->create(['tenant_id' => $this->tenant->id, 'date' => '2025-01-15']);
 
     $response = $this->getJson('/api/billings?sort=date');
     $response->assertOk();

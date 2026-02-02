@@ -8,15 +8,11 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'media');
     grantPermissions($user, 'patients');
     grantPermissions($user, 'medical_records');
@@ -24,9 +20,9 @@ beforeEach(/**
 });
 
 it('returns patient and medical record media when filtering by patientAndMedicalRecords', function () {
-    $patient = Patient::factory()->create();
-    $otherPatient = Patient::factory()->create();
-    $medicalRecord = MedicalRecord::factory()->create(['patient_id' => $patient->id]);
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $otherPatient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $medicalRecord = MedicalRecord::factory()->create(['patient_id' => $patient->id, 'tenant_id' => $this->tenant->id]);
 
     $patient->addMedia(UploadedFile::fake()->create('patient-doc.pdf', 100))
         ->toMediaCollection('documents');
@@ -50,7 +46,7 @@ it('requires patientAndMedicalRecords filter for index', function () {
 });
 
 it('filters media by collectionName', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $patient->addMedia(UploadedFile::fake()->create('lab.pdf', 100))
         ->toMediaCollection('laboratory-tests');
     $patient->addMedia(UploadedFile::fake()->create('xray.pdf', 100))
@@ -65,7 +61,7 @@ it('filters media by collectionName', function () {
 });
 
 it('paginates media with patientAndMedicalRecords filter', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     for ($i = 0; $i < 15; $i++) {
         $patient->addMedia(UploadedFile::fake()->create("doc-{$i}.pdf", 100))
             ->toMediaCollection('documents');

@@ -5,23 +5,18 @@ declare(strict_types=1);
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantUserPermissions($user);
     Sanctum::actingAs($user);
 });
 
 it('filters users by search term', function () {
-    User::factory()->create(['name' => 'Target user']);
-    User::factory()->create(['name' => 'Other user']);
+    User::factory()->create(['name' => 'Target user', 'tenant_id' => $this->tenant->id]);
+    User::factory()->create(['name' => 'Other user', 'tenant_id' => $this->tenant->id]);
 
     $response = $this->withHeader('Accept-Language', 'en')
         ->getJson('/api/users?search=Target');
@@ -41,8 +36,8 @@ it('filters users by search term', function () {
 });
 
 it('sorts users', function () {
-    User::factory()->create(['name' => 'A user']);
-    User::factory()->create(['name' => 'Z user']);
+    User::factory()->create(['name' => 'A user', 'tenant_id' => $this->tenant->id]);
+    User::factory()->create(['name' => 'Z user', 'tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/users?sort=name');
     $response->assertOk();
@@ -66,8 +61,8 @@ it('sorts users', function () {
 });
 
 it('filters users by name', function () {
-    User::factory()->create(['name' => 'Sample name']);
-    User::factory()->create();
+    User::factory()->create(['name' => 'Sample name', 'tenant_id' => $this->tenant->id]);
+    User::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/users?filter[name]='.('Sample name'));
 
@@ -76,8 +71,8 @@ it('filters users by name', function () {
 });
 
 it('filters users by email', function () {
-    User::factory()->create(['email' => 'test@example.com']);
-    User::factory()->create();
+    User::factory()->create(['email' => 'test@example.com', 'tenant_id' => $this->tenant->id]);
+    User::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/users?filter[email]='.('test@example.com'));
 
@@ -87,9 +82,9 @@ it('filters users by email', function () {
 
 it('filters users by date range', function () {
     // Create users outside the date range
-    User::factory()->create(['created_at' => now()->subDays(5)]);
+    User::factory()->create(['created_at' => now()->subDays(5), 'tenant_id' => $this->tenant->id]);
     // Create user inside the date range
-    $userInRange = User::factory()->create(['created_at' => now()->subDays(1)]);
+    $userInRange = User::factory()->create(['created_at' => now()->subDays(1), 'tenant_id' => $this->tenant->id]);
 
     $after = now()->subDays(2)->format('Y-m-d');
     $before = now()->format('Y-m-d');
@@ -106,7 +101,7 @@ it('filters users by date range', function () {
 });
 
 it('paginates filtered users', function () {
-    User::factory()->count(15)->create();
+    User::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/users?perPage=5&page=1');
 

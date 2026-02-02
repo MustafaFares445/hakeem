@@ -10,16 +10,12 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     Storage::fake('public');
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'media');
     grantPermissions($user, 'patients');
     grantPermissions($user, 'medical_records');
@@ -27,7 +23,7 @@ beforeEach(/**
 });
 
 it('lists media for patient and their medical records', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $patient->addMedia(UploadedFile::fake()->create('doc.pdf', 100))
         ->toMediaCollection('documents');
 
@@ -38,7 +34,7 @@ it('lists media for patient and their medical records', function () {
 });
 
 it('creates media for patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $file = UploadedFile::fake()->create('document.pdf', 100);
 
     $response = $this->post('/api/media', [
@@ -52,7 +48,7 @@ it('creates media for patient', function () {
 });
 
 it('creates media for medical record', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $medicalRecord = MedicalRecord::factory()->create(['patient_id' => $patient->id]);
     $file = UploadedFile::fake()->create('attachment.pdf', 100);
 
@@ -67,8 +63,7 @@ it('creates media for medical record', function () {
 });
 
 it('shows a media item', function () {
-    $tenant = tenant();
-    $patient = Patient::factory()->create(['tenant_id' => $tenant->id]);
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $media = $patient->addMedia(UploadedFile::fake()->create('doc.pdf', 100))
         ->toMediaCollection('documents');
 
@@ -82,8 +77,7 @@ it('shows a media item', function () {
 });
 
 it('deletes a media item', function () {
-    $tenant = tenant();
-    $patient = Patient::factory()->create(['tenant_id' => $tenant->id]);
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $media = $patient->addMedia(UploadedFile::fake()->create('doc.pdf', 100))
         ->toMediaCollection('documents');
     $mediaId = $media->id;

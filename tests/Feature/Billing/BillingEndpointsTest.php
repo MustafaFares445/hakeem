@@ -9,22 +9,17 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'billings');
     Sanctum::actingAs($user);
 });
 
 it('lists billings', function () {
-    Billing::factory()->count(3)->create();
+    Billing::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/billings');
 
@@ -72,7 +67,7 @@ it('creates an outgoing billing', function () {
 });
 
 it('shows a billing', function () {
-    $billing = Billing::factory()->create();
+    $billing = Billing::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/billings/{$billing->id}");
     $response->assertOk()
@@ -85,7 +80,7 @@ it('shows a billing', function () {
 });
 
 it('updates a billing', function () {
-    $billing = Billing::factory()->incoming()->create();
+    $billing = Billing::factory()->incoming()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'type' => BillingTypeEnum::Incoming->value,
@@ -101,7 +96,7 @@ it('updates a billing', function () {
 });
 
 it('deletes a billing', function () {
-    $billing = Billing::factory()->create();
+    $billing = Billing::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/billings/{$billing->id}");
     $response->assertOk()

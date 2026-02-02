@@ -6,16 +6,11 @@ use App\Enums\RoleEnum;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantUserPermissions($user);
     Sanctum::actingAs($user);
 });
@@ -71,7 +66,7 @@ it('handles max length boundary for name', function () {
         'username' => 'testuser',
         'email' => 'test@example.com',
         'password' => 'secret',
-        'roles' => [RoleEnum::cases()[0]->value]
+        'roles' => [RoleEnum::cases()[0]->value],
     ];
 
     // Act
@@ -89,12 +84,12 @@ it('handles max length boundary for email', function () {
         'username' => 'testuser',
         'email' => $maxLengthString,
         'password' => 'secret',
-        'roles' => [RoleEnum::cases()[0]->value]
+        'roles' => [RoleEnum::cases()[0]->value],
     ];
 
     // Act
     $response = $this->postJson('/api/users', $payload);
 
     // Assert
-   $response->assertStatus(201);
+    $response->assertStatus(201);
 });

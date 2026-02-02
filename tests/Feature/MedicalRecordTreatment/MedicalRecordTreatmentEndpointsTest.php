@@ -9,22 +9,17 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'medical_record_treatments');
     Sanctum::actingAs($user);
 });
 
 it('lists medical record treatments', function () {
-    MedicalRecordTreatment::factory()->count(3)->create();
+    MedicalRecordTreatment::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/medical-record-treatments');
 
@@ -33,8 +28,8 @@ it('lists medical record treatments', function () {
 });
 
 it('creates a medical record treatment', function () {
-    $medicalRecord = MedicalRecord::factory()->create();
-    $fillerMaterial = FillerMaterial::factory()->create();
+    $medicalRecord = MedicalRecord::factory()->create(['tenant_id' => $this->tenant->id]);
+    $fillerMaterial = FillerMaterial::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'medicalRecordId' => $medicalRecord->id,
@@ -43,7 +38,7 @@ it('creates a medical record treatment', function () {
         'treatmentCost' => 100.0,
         'treatmentDescription' => 'Sample treatment',
         'sessionNumber' => 1,
-        'doctorIds' => [User::factory()->create()->id],
+        'doctorIds' => [User::factory()->create(['tenant_id' => $this->tenant->id])->id],
     ];
 
     $response = $this->postJson('/api/medical-record-treatments', $payload);
@@ -54,7 +49,7 @@ it('creates a medical record treatment', function () {
 });
 
 it('shows a medical record treatment', function () {
-    $treatment = MedicalRecordTreatment::factory()->create();
+    $treatment = MedicalRecordTreatment::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/medical-record-treatments/{$treatment->id}");
 
@@ -70,7 +65,7 @@ it('shows a medical record treatment', function () {
 });
 
 it('updates a medical record treatment', function () {
-    $treatment = MedicalRecordTreatment::factory()->create();
+    $treatment = MedicalRecordTreatment::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'treatmentDate' => '2025-02-02',
@@ -86,7 +81,7 @@ it('updates a medical record treatment', function () {
 });
 
 it('deletes a medical record treatment', function () {
-    $treatment = MedicalRecordTreatment::factory()->create();
+    $treatment = MedicalRecordTreatment::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/medical-record-treatments/{$treatment->id}");
 
@@ -123,4 +118,3 @@ it('returns 404 when deleting non-existent medical record treatment', function (
 
     $response->assertNotFound();
 });
-

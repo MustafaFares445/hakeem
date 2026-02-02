@@ -7,23 +7,18 @@ use App\Models\Billing;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'billings');
     Sanctum::actingAs($user);
 });
 
 it('forbids unauthorized user from viewing billings', function () {
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    Billing::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    Billing::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $response = $this->getJson('/api/billings');
@@ -32,7 +27,7 @@ it('forbids unauthorized user from viewing billings', function () {
 });
 
 it('forbids unauthorized user from creating billing', function () {
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -49,8 +44,8 @@ it('forbids unauthorized user from creating billing', function () {
 });
 
 it('forbids unauthorized user from updating billing', function () {
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    $billing = Billing::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $billing = Billing::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -67,8 +62,8 @@ it('forbids unauthorized user from updating billing', function () {
 });
 
 it('forbids unauthorized user from deleting billing', function () {
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    $billing = Billing::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $billing = Billing::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $response = $this->deleteJson('/api/billings/'.$billing->id);

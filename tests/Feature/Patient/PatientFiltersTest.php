@@ -7,23 +7,18 @@ use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'patients');
     Sanctum::actingAs($user);
 });
 
 it('sorts patients', function () {
-    Patient::factory()->create(['name' => 'A patient']);
-    Patient::factory()->create(['name' => 'Z patient']);
+    Patient::factory()->create(['name' => 'A patient', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['name' => 'Z patient', 'tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?sort=name');
     $response->assertOk();
@@ -47,8 +42,8 @@ it('sorts patients', function () {
 });
 
 it('filters patients by name', function () {
-    Patient::factory()->create(['name' => 'Sample name']);
-    Patient::factory()->create();
+    Patient::factory()->create(['name' => 'Sample name', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[name]='.('Sample name'));
 
@@ -57,8 +52,8 @@ it('filters patients by name', function () {
 });
 
 it('filters patients by email', function () {
-    Patient::factory()->create(['email' => 'test@example.com']);
-    Patient::factory()->create();
+    Patient::factory()->create(['email' => 'test@example.com', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[email]='.('test@example.com'));
 
@@ -67,8 +62,8 @@ it('filters patients by email', function () {
 });
 
 it('filters patients by phone_number', function () {
-    Patient::factory()->create(['phone_number' => '+1234567890']);
-    Patient::factory()->create();
+    Patient::factory()->create(['phone_number' => '+1234567890', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[phoneNumber]='.('+1234567890'));
 
@@ -77,8 +72,8 @@ it('filters patients by phone_number', function () {
 });
 
 it('filters patients by birthday', function () {
-    Patient::factory()->create(['birthday' => '2025-01-01']);
-    Patient::factory()->create();
+    Patient::factory()->create(['birthday' => '2025-01-01', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[birthday]='.('2025-01-01'));
 
@@ -89,8 +84,8 @@ it('filters patients by birthday', function () {
 it('filters patients by gender', function () {
     $genderValue = PatientGenderEnum::cases()[0]->value;
     $otherGenderValue = PatientGenderEnum::cases()[1]->value;
-    Patient::factory()->create(['gender' => $genderValue]);
-    Patient::factory()->create(['gender' => $otherGenderValue]);
+    Patient::factory()->create(['gender' => $genderValue, 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['gender' => $otherGenderValue, 'tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[gender]='.(PatientGenderEnum::cases()[0]->value));
 
@@ -99,8 +94,8 @@ it('filters patients by gender', function () {
 });
 
 it('filters patients by city', function () {
-    Patient::factory()->create(['city' => 'Sample city']);
-    Patient::factory()->create();
+    Patient::factory()->create(['city' => 'Sample city', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[city]='.('Sample city'));
 
@@ -109,8 +104,8 @@ it('filters patients by city', function () {
 });
 
 it('filters patients by street_address', function () {
-    Patient::factory()->create(['street_address' => 'Sample street_address']);
-    Patient::factory()->create();
+    Patient::factory()->create(['street_address' => 'Sample street_address', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[streetAddress]='.('Sample street_address'));
 
@@ -119,8 +114,8 @@ it('filters patients by street_address', function () {
 });
 
 it('filters patients by registration_date', function () {
-    Patient::factory()->create(['registration_date' => '2025-01-01']);
-    Patient::factory()->create();
+    Patient::factory()->create(['registration_date' => '2025-01-01', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[registrationDate]='.('2025-01-01'));
 
@@ -129,8 +124,8 @@ it('filters patients by registration_date', function () {
 });
 
 it('filters patients by notes', function () {
-    Patient::factory()->create(['notes' => 'Sample notes']);
-    Patient::factory()->create();
+    Patient::factory()->create(['notes' => 'Sample notes', 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?filter[notes]='.('Sample notes'));
 
@@ -139,8 +134,8 @@ it('filters patients by notes', function () {
 });
 
 it('filters patients by date range', function () {
-    Patient::factory()->create(['created_at' => now()->subDays(5)]);
-    Patient::factory()->create(['created_at' => now()]);
+    Patient::factory()->create(['created_at' => now()->subDays(5), 'tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['created_at' => now(), 'tenant_id' => $this->tenant->id]);
 
     $after = now()->subDays(2)->format('Y-m-d');
     $before = now()->format('Y-m-d');
@@ -152,7 +147,7 @@ it('filters patients by date range', function () {
 });
 
 it('paginates filtered patients', function () {
-    Patient::factory()->count(15)->create();
+    Patient::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/patients?perPage=5&page=1');
 

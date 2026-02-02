@@ -7,7 +7,6 @@ use App\Http\Controllers\API\BillingController;
 use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\ChronicDiseasesController;
 use App\Http\Controllers\API\ChronicMedicationsController;
-use App\Http\Controllers\API\ClinicController;
 use App\Http\Controllers\API\DentalLabController;
 use App\Http\Controllers\API\FillerMaterialController;
 use App\Http\Controllers\API\MediaController;
@@ -26,7 +25,7 @@ Route::prefix('auth')->group(function () {
     Route::put('/update-info', [AuthController::class, 'updateInfo'])->middleware('auth:sanctum');
 });
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.by.user'])->group(function () {
     Route::apiResource('/users', UserController::class);
 
     Route::apiResource('/patients', PatientController::class);

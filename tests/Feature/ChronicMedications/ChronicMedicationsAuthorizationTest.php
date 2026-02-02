@@ -6,23 +6,18 @@ use App\Models\ChronicMedications;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 });
 
 it('forbids unauthorized user from viewing chronic medications', function () {
     // Arrange
-    $user = User::factory()->create();
-    ChronicMedications::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act
@@ -34,8 +29,8 @@ it('forbids unauthorized user from viewing chronic medications', function () {
 
 it('forbids unauthorized user from creating chronicMedications', function () {
     // Arrange
-    $user = User::factory()->create();
-    $patient = App\Models\Patient::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $patient = App\Models\Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -52,8 +47,8 @@ it('forbids unauthorized user from creating chronicMedications', function () {
 
 it('forbids unauthorized user from updating chronicMedications', function () {
     // Arrange
-    $user = User::factory()->create();
-    $model = ChronicMedications::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -69,8 +64,8 @@ it('forbids unauthorized user from updating chronicMedications', function () {
 
 it('forbids unauthorized user from deleting chronicMedications', function () {
     // Arrange
-    $user = User::factory()->create();
-    $model = ChronicMedications::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act

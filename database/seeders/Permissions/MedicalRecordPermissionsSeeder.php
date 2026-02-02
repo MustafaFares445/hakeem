@@ -12,7 +12,7 @@ final class MedicalRecordPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        $group = 'medical-records';
+        $group = 'medical_records';
         $actions = ['view', 'create', 'update', 'delete'];
 
         foreach ($actions as $action) {

@@ -7,23 +7,18 @@ use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 });
 
 it('forbids unauthorized user from viewing patients', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    Patient::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act
@@ -35,7 +30,7 @@ it('forbids unauthorized user from viewing patients', function () {
 
 it('forbids unauthorized user from creating patient', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -59,8 +54,8 @@ it('forbids unauthorized user from creating patient', function () {
 
 it('forbids unauthorized user from updating patient', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    $model = Patient::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -84,8 +79,8 @@ it('forbids unauthorized user from updating patient', function () {
 
 it('forbids unauthorized user from deleting patient', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    $model = Patient::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act

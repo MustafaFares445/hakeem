@@ -54,11 +54,9 @@ final class AppServiceProvider extends ServiceProvider
 
         Scramble::configure()
             ->withDocumentTransformers(function (OpenApi $openApi) {
-                $openApi->components->securitySchemes['tenant'] = SecurityScheme::apiKey('header', 'X-Tenant-ID');
                 $openApi->components->securitySchemes['bearer'] = SecurityScheme::http('bearer');
 
                 $openApi->security[] = new SecurityRequirement([
-                    'tenant' => [],
                     'bearer' => [],
                 ]);
             });

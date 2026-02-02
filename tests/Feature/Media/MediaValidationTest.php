@@ -8,15 +8,11 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'media');
     Sanctum::actingAs($user);
 });
@@ -41,9 +37,9 @@ it('validates patientId must exist', function () {
 });
 
 it('validates medicalRecordId must belong to patient', function () {
-    $patient = Patient::factory()->create();
-    $otherPatient = Patient::factory()->create();
-    $medicalRecord = MedicalRecord::factory()->create(['patient_id' => $otherPatient->id]);
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $otherPatient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $medicalRecord = MedicalRecord::factory()->create(['patient_id' => $otherPatient->id, 'tenant_id' => $this->tenant->id]);
     $file = UploadedFile::fake()->create('doc.pdf', 100);
 
     $response = $this->post('/api/media', [

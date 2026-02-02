@@ -12,7 +12,7 @@ final class DentalLabPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        $group = 'dental-labs';
+        $group = 'dental_labs';
         $actions = ['view', 'create', 'update', 'delete'];
 
         foreach ($actions as $action) {

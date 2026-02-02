@@ -9,16 +9,11 @@ use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $permissions = [
         'filler-materials.viewAny',
@@ -42,7 +37,7 @@ beforeEach(/**
 });
 
 it('lists filler materials', function () {
-    FillerMaterial::factory()->count(3)->create();
+    FillerMaterial::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/filler-materials');
 
@@ -74,7 +69,7 @@ it('creates a filler material', function () {
 });
 
 it('shows a filler material', function () {
-    $fillerMaterial = FillerMaterial::factory()->create();
+    $fillerMaterial = FillerMaterial::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/filler-materials/{$fillerMaterial->id}");
     $response->assertOk()
@@ -88,7 +83,7 @@ it('shows a filler material', function () {
 });
 
 it('updates a filler material', function () {
-    $fillerMaterial = FillerMaterial::factory()->create();
+    $fillerMaterial = FillerMaterial::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'name' => 'Updated Filler Material',
@@ -102,7 +97,7 @@ it('updates a filler material', function () {
 });
 
 it('deletes a filler material', function () {
-    $fillerMaterial = FillerMaterial::factory()->create();
+    $fillerMaterial = FillerMaterial::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/filler-materials/{$fillerMaterial->id}");
     $response->assertOk()
@@ -147,4 +142,3 @@ it('returns 404 when filler material ID format is invalid', function () {
 
     $response->assertNotFound();
 });
-

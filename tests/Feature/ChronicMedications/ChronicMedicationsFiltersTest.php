@@ -6,23 +6,18 @@ use App\Models\ChronicMedications;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'chronic_medications');
     Sanctum::actingAs($user);
 });
 
 it('sorts chronic medications', function () {
-    ChronicMedications::factory()->create(['title' => 'A chronicMedications']);
-    ChronicMedications::factory()->create(['title' => 'Z chronicMedications']);
+    ChronicMedications::factory()->create(['title' => 'A chronicMedications', 'tenant_id' => $this->tenant->id]);
+    ChronicMedications::factory()->create(['title' => 'Z chronicMedications', 'tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/chronic_medications?sort=title');
     $response->assertOk();
@@ -46,9 +41,9 @@ it('sorts chronic medications', function () {
 });
 
 it('filters chronic medications by patient_id', function () {
-    $patient = App\Models\Patient::factory()->create();
-    ChronicMedications::factory()->create(['patient_id' => $patient->id]);
-    ChronicMedications::factory()->create();
+    $patient = App\Models\Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    ChronicMedications::factory()->create(['patient_id' => $patient->id, 'tenant_id' => $this->tenant->id]);
+    ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/chronic_medications?filter[patientId]='.$patient->id);
 
@@ -57,8 +52,8 @@ it('filters chronic medications by patient_id', function () {
 });
 
 it('filters chronic medications by title', function () {
-    ChronicMedications::factory()->create(['title' => 'Sample title']);
-    ChronicMedications::factory()->create();
+    ChronicMedications::factory()->create(['title' => 'Sample title', 'tenant_id' => $this->tenant->id]);
+    ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/chronic_medications?filter[title]='.('Sample title'));
 
@@ -67,8 +62,8 @@ it('filters chronic medications by title', function () {
 });
 
 it('filters chronic medications by date range', function () {
-    ChronicMedications::factory()->create(['created_at' => now()->subDays(5)]);
-    ChronicMedications::factory()->create(['created_at' => now()]);
+    ChronicMedications::factory()->create(['created_at' => now()->subDays(5), 'tenant_id' => $this->tenant->id]);
+    ChronicMedications::factory()->create(['created_at' => now(), 'tenant_id' => $this->tenant->id]);
 
     $after = now()->subDays(2)->format('Y-m-d');
     $before = now()->format('Y-m-d');
@@ -80,7 +75,7 @@ it('filters chronic medications by date range', function () {
 });
 
 it('paginates filtered chronic medications', function () {
-    ChronicMedications::factory()->count(15)->create();
+    ChronicMedications::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/chronic_medications?perPage=5&page=1');
 

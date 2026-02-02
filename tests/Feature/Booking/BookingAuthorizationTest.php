@@ -7,24 +7,19 @@ use App\Models\Booking;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'bookings');
     Sanctum::actingAs($user);
 });
 
 it('forbids unauthorized user from viewing bookings', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    Booking::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act
@@ -36,7 +31,7 @@ it('forbids unauthorized user from viewing bookings', function () {
 
 it('forbids unauthorized user from creating booking', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -57,8 +52,8 @@ it('forbids unauthorized user from creating booking', function () {
 
 it('forbids unauthorized user from updating booking', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    $model = Booking::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = Booking::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     $payload = [
@@ -79,8 +74,8 @@ it('forbids unauthorized user from updating booking', function () {
 
 it('forbids unauthorized user from deleting booking', function () {
     // Arrange
-    $user = User::factory()->create(['tenant_id' => tenant('id')]);
-    $model = Booking::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    $model = Booking::factory()->create(['tenant_id' => $this->tenant->id]);
     Sanctum::actingAs($user);
 
     // Act

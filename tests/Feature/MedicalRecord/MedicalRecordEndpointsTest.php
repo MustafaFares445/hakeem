@@ -9,22 +9,18 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'medical_records');
     Sanctum::actingAs($user);
 });
 
 it('lists medical records', function () {
-    MedicalRecord::factory()->count(3)->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    MedicalRecord::factory()->count(3)->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $response = $this->getJson('/api/medical-records');
 
@@ -48,7 +44,7 @@ it('lists medical records', function () {
 });
 
 it('creates a medical record', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,
@@ -68,7 +64,8 @@ it('creates a medical record', function () {
 });
 
 it('shows a medical record', function () {
-    $medicalRecord = MedicalRecord::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $medicalRecord = MedicalRecord::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $response = $this->getJson("/api/medical-records/{$medicalRecord->id}");
 
@@ -90,7 +87,8 @@ it('shows a medical record', function () {
 });
 
 it('updates a medical record', function () {
-    $medicalRecord = MedicalRecord::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $medicalRecord = MedicalRecord::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $updatePayload = [
         'recordDate' => '2025-02-02',
@@ -108,7 +106,8 @@ it('updates a medical record', function () {
 });
 
 it('deletes a medical record', function () {
-    $medicalRecord = MedicalRecord::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    $medicalRecord = MedicalRecord::factory()->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $response = $this->deleteJson("/api/medical-records/{$medicalRecord->id}");
 

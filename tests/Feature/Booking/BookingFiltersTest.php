@@ -8,23 +8,18 @@ use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'bookings');
     Sanctum::actingAs($user);
 });
 
 it('sorts bookings', function () {
-    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Preview->value]);
-    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Surgery->value]);
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Preview->value, 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Surgery->value, 'tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/bookings?sort=appointmentType');
     $response->assertOk();
@@ -42,9 +37,9 @@ it('sorts bookings', function () {
 });
 
 it('filters bookings by patient_id', function () {
-    $patient = Patient::factory()->create();
-    Booking::factory()->create(['patient_id' => null]);
-    Booking::factory()->create(['patient_id' => $patient->id]);
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['patient_id' => null, 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['patient_id' => $patient->id, 'tenant_id' => $this->tenant->id]);
 
     // Use the explicit string "null" to indicate we want rows where patient_id IS NULL
     $response = $this->getJson('/api/bookings?filter[patientId]=null');
@@ -67,9 +62,9 @@ it('filters bookings by tenant_id', function () {
 });
 
 it('filters bookings by user_id', function () {
-    $otherUser = User::factory()->create(['tenant_id' => tenant('id')]);
-    Booking::factory()->create(['user_id' => null]);
-    Booking::factory()->create(['user_id' => $otherUser->id]);
+    $otherUser = User::factory()->create(['tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['user_id' => null, 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['user_id' => $otherUser->id, 'tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/bookings?filter[userId]=null');
 
@@ -78,8 +73,8 @@ it('filters bookings by user_id', function () {
 });
 
 it('filters bookings by date', function () {
-    Booking::factory()->create(['date' => '2025-01-01']);
-    Booking::factory()->create();
+    Booking::factory()->create(['date' => '2025-01-01', 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/bookings?filter[date]='.('2025-01-01'));
 
@@ -88,8 +83,8 @@ it('filters bookings by date', function () {
 });
 
 it('filters bookings by time', function () {
-    Booking::factory()->create(['time' => 'Sample time']);
-    Booking::factory()->create();
+    Booking::factory()->create(['time' => 'Sample time', 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/bookings?filter[time]='.('Sample time'));
 
@@ -98,8 +93,8 @@ it('filters bookings by time', function () {
 });
 
 it('filters bookings by appointment_type', function () {
-    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Review->value]);
-    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Preview->value]);
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Review->value, 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['appointment_type' => AppointmentTypeEnum::Preview->value, 'tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/bookings?filter[appointmentType]='.AppointmentTypeEnum::Review->value);
 
@@ -108,8 +103,8 @@ it('filters bookings by appointment_type', function () {
 });
 
 it('filters bookings by date range', function () {
-    Booking::factory()->create(['created_at' => now()->subDays(5)]);
-    Booking::factory()->create(['created_at' => now()]);
+    Booking::factory()->create(['created_at' => now()->subDays(5), 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['created_at' => now(), 'tenant_id' => $this->tenant->id]);
 
     $after = now()->subDays(2)->format('Y-m-d');
     $before = now()->format('Y-m-d');
@@ -121,7 +116,7 @@ it('filters bookings by date range', function () {
 });
 
 it('paginates filtered bookings', function () {
-    Booking::factory()->count(15)->create();
+    Booking::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/bookings?perPage=5&page=1');
 

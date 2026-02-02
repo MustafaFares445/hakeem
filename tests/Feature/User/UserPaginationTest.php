@@ -5,23 +5,18 @@ declare(strict_types=1);
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantUserPermissions($user);
     Sanctum::actingAs($user);
 });
 
 it('paginates users with default per page', function () {
     // Arrange
-    User::factory()->count(25)->create();
+    User::factory()->count(25)->create(['tenant_id' => $this->tenant->id]);
 
     // Act
     $response = $this->getJson('/api/users');
@@ -36,7 +31,7 @@ it('paginates users with default per page', function () {
 
 it('paginates users with custom per page', function () {
     // Arrange
-    User::factory()->count(15)->create();
+    User::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
 
     // Act
     $response = $this->getJson('/api/users?perPage=5');
@@ -66,7 +61,7 @@ it('handles pagination for empty result set', function () {
 
 it('handles pagination beyond last page', function () {
     // Arrange
-    User::factory()->count(5)->create();
+    User::factory()->count(5)->create(['tenant_id' => $this->tenant->id]);
 
     // Act
     $response = $this->getJson('/api/users?page=999');
@@ -80,7 +75,7 @@ it('handles pagination beyond last page', function () {
 
 it('includes pagination metadata', function () {
     // Arrange
-    User::factory()->count(25)->create();
+    User::factory()->count(25)->create(['tenant_id' => $this->tenant->id]);
 
     // Act
     $response = $this->getJson('/api/users');

@@ -7,16 +7,11 @@ use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'medical_records');
     Sanctum::actingAs($user);
 });
@@ -52,7 +47,7 @@ it('validates patientId must be a valid existing uuid', function () {
 });
 
 it('validates recordDate must be a valid date format', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,
@@ -68,7 +63,7 @@ it('validates recordDate must be a valid date format', function () {
 });
 
 it('validates recordType must be a valid enum value', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,
@@ -84,7 +79,7 @@ it('validates recordType must be a valid enum value', function () {
 });
 
 it('validates caseName must not exceed max length', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,
@@ -100,7 +95,7 @@ it('validates caseName must not exceed max length', function () {
 });
 
 it('validates description must not exceed max length', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,
@@ -117,7 +112,7 @@ it('validates description must not exceed max length', function () {
 });
 
 it('validates totalCost and paidAmount must be non negative numbers', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,

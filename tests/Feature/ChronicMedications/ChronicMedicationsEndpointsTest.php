@@ -7,22 +7,17 @@ use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'chronic_medications');
     Sanctum::actingAs($user);
 });
 
 it('lists chronic medications', function () {
-    ChronicMedications::factory()->count(3)->create();
+    ChronicMedications::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson('/api/chronic_medications');
 
@@ -41,7 +36,7 @@ it('lists chronic medications', function () {
 });
 
 it('creates a chronicMedications', function () {
-    $patient = App\Models\Patient::factory()->create();
+    $patient = App\Models\Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $payload = [
         'patientId' => $patient->id,
         'title' => 'Sample title',
@@ -54,7 +49,7 @@ it('creates a chronicMedications', function () {
 });
 
 it('shows a chronicMedications', function () {
-    $chronicMedications = ChronicMedications::factory()->create();
+    $chronicMedications = ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->getJson("/api/chronic_medications/{$chronicMedications->id}");
     $response->assertOk()
@@ -73,7 +68,7 @@ it('shows a chronicMedications', function () {
 });
 
 it('updates a chronicMedications', function () {
-    $chronicMedications = ChronicMedications::factory()->create();
+    $chronicMedications = ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $updatePayload = [
         'title' => 'Sample title updated',
@@ -85,7 +80,7 @@ it('updates a chronicMedications', function () {
 });
 
 it('deletes a chronicMedications', function () {
-    $chronicMedications = ChronicMedications::factory()->create();
+    $chronicMedications = ChronicMedications::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $response = $this->deleteJson("/api/chronic_medications/{$chronicMedications->id}");
     $response->assertOk()

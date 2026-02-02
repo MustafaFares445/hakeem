@@ -6,27 +6,22 @@ use App\Models\Booking;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'bookings');
     Sanctum::actingAs($user);
 });
 
 it('paginates bookings with default per page', function () {
     // Arrange
-    Booking::factory()->count(25)->create();
-    
+    Booking::factory()->count(25)->create(['tenant_id' => $this->tenant->id]);
+
     // Act
     $response = $this->getJson('/api/bookings');
-    
+
     // Assert
     $response->assertOk();
     $data = $response->json('data');
@@ -37,11 +32,11 @@ it('paginates bookings with default per page', function () {
 
 it('paginates bookings with custom per page', function () {
     // Arrange
-    Booking::factory()->count(15)->create();
-    
+    Booking::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
+
     // Act
     $response = $this->getJson('/api/bookings?perPage=5');
-    
+
     // Assert
     $response->assertOk();
     $data = $response->json('data');
@@ -52,10 +47,10 @@ it('paginates bookings with custom per page', function () {
 it('handles pagination for empty result set', function () {
     // Arrange
     // No models created
-    
+
     // Act
     $response = $this->getJson('/api/bookings');
-    
+
     // Assert
     $response->assertOk();
     $data = $response->json('data');
@@ -66,11 +61,11 @@ it('handles pagination for empty result set', function () {
 
 it('handles pagination beyond last page', function () {
     // Arrange
-    Booking::factory()->count(5)->create();
-    
+    Booking::factory()->count(5)->create(['tenant_id' => $this->tenant->id]);
+
     // Act
     $response = $this->getJson('/api/bookings?page=999');
-    
+
     // Assert
     $response->assertOk();
     $data = $response->json('data');
@@ -80,13 +75,12 @@ it('handles pagination beyond last page', function () {
 
 it('includes pagination metadata', function () {
     // Arrange
-    Booking::factory()->count(25)->create();
-    
+    Booking::factory()->count(25)->create(['tenant_id' => $this->tenant->id]);
+
     // Act
     $response = $this->getJson('/api/bookings');
-    
+
     // Assert
     $response->assertOk();
     expect($response->json('meta'))->toHaveKeys(['current_page', 'per_page', 'total', 'last_page']);
 });
-

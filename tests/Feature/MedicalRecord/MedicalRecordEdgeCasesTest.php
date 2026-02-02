@@ -7,16 +7,11 @@ use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'medical_records');
     Sanctum::actingAs($user);
 });
@@ -30,7 +25,7 @@ it('handles empty payload gracefully when creating medical record', function () 
 });
 
 it('sanitizes SQL injection attempts in string fields', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,
@@ -46,7 +41,7 @@ it('sanitizes SQL injection attempts in string fields', function () {
 });
 
 it('sanitizes XSS attempts in string fields', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
 
     $payload = [
         'patientId' => $patient->id,
@@ -62,7 +57,7 @@ it('sanitizes XSS attempts in string fields', function () {
 });
 
 it('handles max length boundary for caseName', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $maxLengthString = str_repeat('a', 255);
 
     $payload = [
@@ -78,7 +73,7 @@ it('handles max length boundary for caseName', function () {
 });
 
 it('handles max length boundary for description', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
     $maxLengthString = str_repeat('a', 1000);
 
     $payload = [
@@ -93,4 +88,3 @@ it('handles max length boundary for description', function () {
 
     expect($response->status())->toBeIn([201, 422]);
 });
-

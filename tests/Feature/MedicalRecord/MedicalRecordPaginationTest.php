@@ -3,25 +3,22 @@
 declare(strict_types=1);
 
 use App\Models\MedicalRecord;
+use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-beforeEach(/**
- * @throws JsonException
- * @throws TenantCouldNotBeIdentifiedById
- */ function () {
+beforeEach(function () {
     $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
-    $tenant = Tenant::factory()->create();
-    tenancy()->initialize($tenant);
-    $user = User::factory()->create(['tenant_id' => $tenant->id]);
+    $this->tenant = Tenant::factory()->create();
+    $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
     grantPermissions($user, 'medical_records');
     Sanctum::actingAs($user);
 });
 
 it('paginates medical records with default per page', function () {
-    MedicalRecord::factory()->count(25)->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    MedicalRecord::factory()->count(25)->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $response = $this->getJson('/api/medical-records');
 
@@ -33,7 +30,8 @@ it('paginates medical records with default per page', function () {
 });
 
 it('paginates medical records with custom per page', function () {
-    MedicalRecord::factory()->count(15)->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    MedicalRecord::factory()->count(15)->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $response = $this->getJson('/api/medical-records?perPage=5');
 
@@ -54,7 +52,8 @@ it('handles pagination for empty result set', function () {
 });
 
 it('handles pagination beyond last page', function () {
-    MedicalRecord::factory()->count(5)->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    MedicalRecord::factory()->count(5)->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $response = $this->getJson('/api/medical-records?page=999');
 
@@ -65,11 +64,11 @@ it('handles pagination beyond last page', function () {
 });
 
 it('includes pagination metadata', function () {
-    MedicalRecord::factory()->count(25)->create();
+    $patient = Patient::factory()->create(['tenant_id' => $this->tenant->id]);
+    MedicalRecord::factory()->count(25)->create(['tenant_id' => $this->tenant->id, 'patient_id' => $patient->id]);
 
     $response = $this->getJson('/api/medical-records');
 
     $response->assertOk();
     expect($response->json('meta'))->toHaveKeys(['current_page', 'per_page', 'total', 'last_page']);
 });
-
