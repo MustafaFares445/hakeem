@@ -6,11 +6,14 @@ namespace App\Http\Controllers\API;
 
 use App\Data\Auth\LoginData;
 use App\Data\Auth\ResetPasswordData;
+use App\Data\UserData;
 use App\Http\Requests\AuthRequests\ForgotPasswordRequest;
 use App\Http\Requests\AuthRequests\LoginRequest;
 use App\Http\Requests\AuthRequests\ResetPasswordRequest;
+use App\Http\Requests\UserRequests\UserUpdateRequest;
 use App\Http\Resources\AuthResource;
 use App\Services\AuthService;
+use App\Services\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +25,7 @@ final class AuthController
 {
     use MessageTrait;
 
-    public function __construct(protected AuthService $authService) {}
+    public function __construct(protected AuthService $authService, protected UserService $userService) {}
 
     /**
      * Authenticate user and generate access token
@@ -108,5 +111,26 @@ final class AuthController
         $responseData = $this->authService->resetPassword(ResetPasswordData::from($request->validated()));
 
         return $this->successMessage(message: __($responseData['status']), status: $responseData['httpStatus']);
+    }
+
+    /**
+     * Update authenticated user's information
+     *
+     * This endpoint updates the profile information for the currently authenticated user.
+     * It accepts the same payload as the `UserUpdateRequest` used by the user controller
+     * and returns the updated user wrapped in `AuthResource`.
+     *
+     * @operation updateInfo
+     *
+     * @tags API
+     *
+     * @authenticated
+     */
+    public function updateInfo(UserUpdateRequest $request): AuthResource
+    {
+        $updatedUser = $this->userService->update(UserData::from($request->validated()), auth()->user());
+
+        return AuthResource::make(['user' => $updatedUser, 'token' => null])
+            ->additional(['message' => __('Profile updated successfully')]);
     }
 }

@@ -30,6 +30,38 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
         'tenant_id',
         'data',
         'domain_name',
+        // explicit clinic fields
+        'phone_number',
+        'phone_number2',
+        'specialties',
+        'number_of_doctors',
+        'number_of_secretaries',
+        'map_pin',
+        'city',
+        'address',
+        'instagram',
+        'facebook',
+        'start_working_day',
+        'end_working_day',
+        'start_working_time',
+        'end_working_time',
+    ];
+
+    /**
+     * Casts for tenant attributes
+     *
+     * @var array<string,string>
+     */
+    protected $casts = [
+        'data' => 'array',
+        'specialties' => 'array',
+        'map_pin' => 'array',
+        'number_of_doctors' => 'integer',
+        'number_of_secretaries' => 'integer',
+        'start_working_time' => 'datetime:H:i',
+        'end_working_time' => 'datetime:H:i',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

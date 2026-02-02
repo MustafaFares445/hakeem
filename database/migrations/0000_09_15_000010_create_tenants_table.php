@@ -21,6 +21,22 @@ final class CreateTenantsTable extends Migration
             $table->enum('type', array_values(TenantTypes::cases()))->default(TenantTypes::SMALL_CLINIC->value);
             $table->foreignUuid('tenant_id')->nullable()->constrained();
             $table->string('domain_name');
+
+            $table->string('phone_number')->nullable();
+            $table->string('phone_number2')->nullable();
+            $table->json('specialties')->nullable();
+            $table->unsignedInteger('number_of_doctors')->default(0);
+            $table->unsignedInteger('number_of_secretaries')->default(0);
+            $table->json('map_pin')->nullable();
+            $table->string('city')->nullable();
+            $table->text('address')->nullable();
+            $table->string('instagram')->nullable();
+            $table->string('facebook')->nullable();
+            $table->string('start_working_day')->nullable();
+            $table->string('end_working_day')->nullable();
+            $table->time('start_working_time')->nullable();
+            $table->time('end_working_time')->nullable();
+
             $table->timestamps();
         });
     }

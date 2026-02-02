@@ -27,7 +27,7 @@ final class UserUpdateRequest extends FormRequest
             'roles' => ['sometimes', 'nullable', 'array'],
             /** @example "doctor" */
             'roles.*' => ['string', Rule::exists('roles', 'name')],
-            'primaryImage' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
+            'primaryImage' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ];
     }
 }

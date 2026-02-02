@@ -7,6 +7,7 @@ use App\Http\Controllers\API\BillingController;
 use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\ChronicDiseasesController;
 use App\Http\Controllers\API\ChronicMedicationsController;
+use App\Http\Controllers\API\ClinicController;
 use App\Http\Controllers\API\DentalLabController;
 use App\Http\Controllers\API\FillerMaterialController;
 use App\Http\Controllers\API\MediaController;
@@ -22,6 +23,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/forget-password', [AuthController::class, 'forgotPassword']);
+    Route::put('/update-info', [AuthController::class, 'updateInfo'])->middleware('auth:sanctum');
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -49,4 +51,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/medical-record-treatments', MedicalRecordTreatmentController::class);
 
     Route::apiResource('media', MediaController::class)->only(['index', 'store', 'show', 'destroy']);
+
+    Route::get('/clinic', [ClinicController::class, 'show']);
+    Route::put('/clinic', [ClinicController::class, 'update']);
 });

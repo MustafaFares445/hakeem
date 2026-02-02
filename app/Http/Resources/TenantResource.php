@@ -26,6 +26,20 @@ final class TenantResource extends JsonResource
             /** @example "clinic" */
             'type' => $this->type,
             'data' => $this->data,
+            'phoneNumber' => $this->phone_number,
+            'phoneNumber2' => $this->phone_number2 ,
+            'specialties' => $this->specialties ,
+            'numberOfDoctors' => $this->number_of_doctors ,
+            'numberOfSecretaries' => $this->number_of_secretaries ,
+            'mapPin' => $this->map_pin ,
+            'city' => $this->city ,
+            'address' => $this->address ,
+            'instagram' => $this->instagram ,
+            'facebook' => $this->facebook ,
+            'startWorkingDay' => $this->start_working_day ,
+            'endWorkingDay' => $this->end_working_day ,
+            'startWorkingTime' => $this->start_working_time ,
+            'endWorkingTime' => $this->end_working_time ,
             /** @example "clinic-a.example.com" */
             'domainName' => $this->domain_name,
             /** @example "2025-01-01 12:00:00" */
