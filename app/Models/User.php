@@ -24,6 +24,8 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
  * @property-read string $username
  * @property-read string $email
  * @property-read string|null $phone_number
+ * @property-read string $language
+ * @property-read string $time_format
  * @property-read CarbonInterface|null $email_verified_at
  * @property-read string $password
  * @property-read string|null $remember_token
@@ -40,7 +42,9 @@ final class User extends Authenticatable implements HasMedia, MustVerifyEmail
         'username',
         'email',
         'phone_number',
-        'tenant_id'
+        'language',
+        'time_format',
+        'tenant_id',
     ];
 
     /**
@@ -62,6 +66,8 @@ final class User extends Authenticatable implements HasMedia, MustVerifyEmail
             'username' => 'string',
             'email' => 'string',
             'phone_number' => 'string',
+            'language' => 'string',
+            'time_format' => 'string',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'remember_token' => 'string',

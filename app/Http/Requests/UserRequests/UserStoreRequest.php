@@ -23,6 +23,8 @@ final class UserStoreRequest extends FormRequest
             'username' => ['required', 'string', 'min:3', 'max:191', Rule::unique('users', 'username')],
             /** @example "ahmed@example.com" */
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            /** @example "+963912345678" */
+            'phoneNumber' => ['nullable', 'string', 'max:20', Rule::unique('users', 'phone_number')],
             /** @example "password" */
             'password' => ['nullable', 'string', 'min:3'],
             /** @example ["doctor"] */

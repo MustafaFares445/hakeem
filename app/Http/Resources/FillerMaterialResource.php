@@ -23,6 +23,9 @@ final class FillerMaterialResource extends JsonResource
             'id' => $this->id,
             /** @example "Composite A2" */
             'name' => $this->name,
+            /** @example "yellow" */
+            'color' => $this->color?->value,
+            'dentalLab' => DentalLabResource::make($this->whenLoaded('dentalLab')),
             /** @example "Dental composite material" */
             'description' => $this->description,
             /** @example true */

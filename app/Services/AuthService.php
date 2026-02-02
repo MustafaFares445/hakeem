@@ -103,6 +103,13 @@ final class AuthService
         ]);
     }
 
+    public function changePassword(User $user, string $newPassword): void
+    {
+        $user->update(['password' => $newPassword]);
+
+        event(new PasswordReset($user));
+    }
+
     /**
      * @throws RandomException
      */

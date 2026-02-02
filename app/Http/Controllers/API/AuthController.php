@@ -7,6 +7,7 @@ namespace App\Http\Controllers\API;
 use App\Data\Auth\LoginData;
 use App\Data\Auth\ResetPasswordData;
 use App\Data\UserData;
+use App\Http\Requests\AuthRequests\ChangePasswordRequest;
 use App\Http\Requests\AuthRequests\ForgotPasswordRequest;
 use App\Http\Requests\AuthRequests\LoginRequest;
 use App\Http\Requests\AuthRequests\ResetPasswordRequest;
@@ -132,5 +133,24 @@ final class AuthController
 
         return AuthResource::make(['user' => $updatedUser, 'token' => null])
             ->additional(['message' => __('Profile updated successfully')]);
+    }
+
+    /**
+     * Change authenticated user's password
+     *
+     * This endpoint allows the authenticated user to change their password.
+     * The user must provide their current password and a new password with confirmation.
+     *
+     * @operation changePassword
+     *
+     * @tags API
+     *
+     * @authenticated
+     */
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        $this->authService->changePassword(auth()->user(), $request->validated('newPassword'));
+
+        return $this->successMessage(message: __('Password changed successfully'));
     }
 }

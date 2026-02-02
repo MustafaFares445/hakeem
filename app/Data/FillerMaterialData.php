@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Data;
 
+use App\Enums\FillerMaterialColorEnum;
 use App\Models\FillerMaterial;
 use Mrmarchone\LaravelAutoCrud\Traits\HasModelAttributes;
+use Spatie\LaravelData\Attributes\Validation\Enum;
+use Spatie\LaravelData\Attributes\Validation\Exists;
+use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
 
 final class FillerMaterialData extends Data
@@ -17,7 +21,11 @@ final class FillerMaterialData extends Data
 
     public function __construct(
         public string $name,
-        public ?string $description,
+        #[Enum(FillerMaterialColorEnum::class)]
+        public ?FillerMaterialColorEnum $color = null,
+        #[Uuid, Exists('dental_labs', 'id')]
+        public ?string $dentalLabId = null,
+        public ?string $description = null,
         public ?bool $isActive = true,
     ) {}
 }

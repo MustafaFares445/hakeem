@@ -7,6 +7,7 @@ use App\Http\Controllers\API\BillingController;
 use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\ChronicDiseasesController;
 use App\Http\Controllers\API\ChronicMedicationsController;
+use App\Http\Controllers\API\ClinicController;
 use App\Http\Controllers\API\DentalLabController;
 use App\Http\Controllers\API\FillerMaterialController;
 use App\Http\Controllers\API\MediaController;
@@ -23,9 +24,13 @@ Route::prefix('auth')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/forget-password', [AuthController::class, 'forgotPassword']);
     Route::put('/update-info', [AuthController::class, 'updateInfo'])->middleware('auth:sanctum');
+    Route::put('/change-password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum');
 });
 
 Route::middleware(['auth:sanctum', 'tenant.by.user'])->group(function () {
+    Route::get('/clinic', [ClinicController::class, 'show']);
+    Route::put('/clinic', [ClinicController::class, 'update']);
+
     Route::apiResource('/users', UserController::class);
 
     Route::apiResource('/patients', PatientController::class);

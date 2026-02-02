@@ -20,6 +20,7 @@ final class DentalLab extends Model
         'name',
         'phone',
         'address',
+        'color',
     ];
 
     public function medicalRecordTreatments(): HasMany

@@ -30,7 +30,8 @@ final readonly class FillerMaterialController
     {
         $this->authorize('viewAny', FillerMaterial::class);
 
-        $fillerMaterials = FillerMaterial::getQuery()
+        $fillerMaterials = FillerMaterial::query()
+            ->with('dentalLab')
             ->paginate($request->input('perPage', 20));
 
         return FillerMaterialResource::collection($fillerMaterials)
@@ -52,8 +53,6 @@ final readonly class FillerMaterialController
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    /**
-     */
     public function show(FillerMaterial $fillerMaterial): FillerMaterialResource
     {
         $this->authorize('view', $fillerMaterial);
@@ -62,8 +61,6 @@ final readonly class FillerMaterialController
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
     }
 
-    /**
-     */
     public function update(FillerMaterialUpdateRequest $request, FillerMaterial $fillerMaterial): FillerMaterialResource
     {
         $this->authorize('update', $fillerMaterial);
@@ -76,8 +73,6 @@ final readonly class FillerMaterialController
             ->additional(['message' => ResponseMessages::UPDATED->message()]);
     }
 
-    /**
-     */
     public function destroy(FillerMaterial $fillerMaterial): FillerMaterialResource
     {
         $this->authorize('delete', $fillerMaterial);

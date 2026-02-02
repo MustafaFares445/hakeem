@@ -110,6 +110,55 @@ describe('Logout', function (): void {
     });
 });
 
+describe('Change Password', function (): void {
+    it('can change password when authenticated', function (): void {
+        Event::fake();
+
+        $user = User::factory()->create([
+            'password' => Hash::make('oldpassword'),
+        ]);
+
+        $response = $this->actingAs($user)->putJson('/api/auth/change-password', [
+            'currentPassword' => 'oldpassword',
+            'newPassword' => 'newpassword123',
+            'newPassword_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertSuccessful()
+            ->assertJson([
+                'message' => __('Password changed successfully'),
+            ]);
+
+        expect(Hash::check('newpassword123', $user->fresh()->password))->toBeTrue();
+        Event::assertDispatched(PasswordReset::class);
+    });
+
+    it('requires authentication', function (): void {
+        $response = $this->putJson('/api/auth/change-password', [
+            'currentPassword' => 'oldpassword',
+            'newPassword' => 'newpassword123',
+            'newPassword_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertUnauthorized();
+    });
+
+    it('fails with incorrect current password', function (): void {
+        $user = User::factory()->create([
+            'password' => Hash::make('oldpassword'),
+        ]);
+
+        $response = $this->actingAs($user)->putJson('/api/auth/change-password', [
+            'currentPassword' => 'wrongpassword',
+            'newPassword' => 'newpassword123',
+            'newPassword_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['currentPassword']);
+    });
+});
+
 describe('Forgot Password', function (): void {
     beforeEach(function (): void {
         Notification::fake();

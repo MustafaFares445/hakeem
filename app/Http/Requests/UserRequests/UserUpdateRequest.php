@@ -16,13 +16,21 @@ final class UserUpdateRequest extends FormRequest
 
     public function rules(): array
     {
+        $user = $this->route('user') ?? auth()->id();
+
         return [
             /** @example "Dr. Ahmed Ali" */
             'name' => ['sometimes', 'string', 'max:255'],
             /** @example "ahmed.ali" */
-            'username' => ['sometimes', 'string', 'min:3', 'max:191', Rule::unique('users', 'username')->ignore($this->route('user'))],
+            'username' => ['sometimes', 'string', 'min:3', 'max:191', Rule::unique('users', 'username')->ignore($user)],
             /** @example "ahmed@example.com" */
-            'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
+            'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
+            /** @example "+963912345678" */
+            'phoneNumber' => ['sometimes', 'nullable', 'string', 'max:20', Rule::unique('users', 'phone_number')->ignore($user)],
+            /** @example "en" */
+            'language' => ['sometimes', 'string', Rule::in(['en', 'ar'])],
+            /** @example "12hr" */
+            'timeFormat' => ['sometimes', 'string', Rule::in(['12hr', '24hr'])],
             /** @example ["doctor"] */
             'roles' => ['sometimes', 'nullable', 'array'],
             /** @example "doctor" */

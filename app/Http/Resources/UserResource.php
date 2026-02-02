@@ -25,8 +25,16 @@ final class UserResource extends JsonResource
             'id' => $this->id,
             /** @example "Dr. Ahmed Ali" */
             'name' => $this->name,
+            /** @example "ahmed.ali" */
+            'username' => $this->username,
             /** @example "ahmed@example.com" */
             'email' => $this->email,
+            /** @example "+963912345678" */
+            'phoneNumber' => $this->phone_number,
+            /** @example "en" */
+            'language' => $this->language,
+            /** @example "12hr" */
+            'timeFormat' => $this->time_format,
             'primaryImage' => MediaResource::make($this->whenLoaded('media', fn () => $this->getFirstMedia('primary-image'))),
             'tenant' => TenantResource::make($this->whenLoaded('tenant')),
             /** @example "2025-01-01 12:00:00" */
