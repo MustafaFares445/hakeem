@@ -21,7 +21,10 @@ return [
         'localhost',
     ],
 
-    'default_domain' => env('APP_URL' , 'https://hakeem.mustafafares.com'),
+    'default_domain' => env(
+        'TENANCY_DOMAIN',
+        parse_url(env('APP_URL', 'https://hakeem.mustafafares.com'), PHP_URL_HOST) ?? 'hakeem.mustafafares.com'
+    ),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
