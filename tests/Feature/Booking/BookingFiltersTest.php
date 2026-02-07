@@ -115,6 +115,17 @@ it('filters bookings by date range', function () {
     expect($response->json('data'))->toHaveCount(1);
 });
 
+it('filters bookings by start and end date', function () {
+    Booking::factory()->create(['date' => '2025-01-01', 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['date' => '2025-01-15', 'tenant_id' => $this->tenant->id]);
+    Booking::factory()->create(['date' => '2025-02-01', 'tenant_id' => $this->tenant->id]);
+
+    $response = $this->getJson('/api/bookings?filter[startDate]=2025-01-10&filter[endDate]=2025-01-31');
+
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(1);
+});
+
 it('paginates filtered bookings', function () {
     Booking::factory()->count(15)->create(['tenant_id' => $this->tenant->id]);
 

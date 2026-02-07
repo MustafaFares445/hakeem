@@ -43,6 +43,8 @@ trait BookingFilterQuery
                 AllowedFilter::partial('date'),
                 AllowedFilter::partial('time'),
                 AllowedFilter::exact('appointmentType', 'appointment_type'),
+                AllowedFilter::scope('startDate'),
+                AllowedFilter::scope('endDate'),
                 AllowedFilter::scope('createdAfter'),
                 AllowedFilter::scope('createdBefore'),
                 AllowedFilter::scope('search'),
@@ -70,6 +72,20 @@ trait BookingFilterQuery
         $dateTime = is_string($date) ? \Carbon\Carbon::parse($date)->endOfDay() : $date;
 
         return $query->where('created_at', '<=', $dateTime);
+    }
+
+    public function scopeStartDate($query, $date)
+    {
+        $dateTime = is_string($date) ? \Carbon\Carbon::parse($date)->startOfDay() : $date;
+
+        return $query->where('date', '>=', $dateTime);
+    }
+
+    public function scopeEndDate($query, $date)
+    {
+        $dateTime = is_string($date) ? \Carbon\Carbon::parse($date)->endOfDay() : $date;
+
+        return $query->where('date', '<=', $dateTime);
     }
 
     public function scopePatientId($query, $value)
