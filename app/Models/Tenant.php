@@ -5,28 +5,31 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Scopes\MainTenantScope;
+use Carbon\Carbon;
 use Database\Factories\TenantFactory;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Mrmarchone\LaravelAutoCrud\Traits\HasMediaConversions;
+use Spatie\MediaLibrary\HasMedia;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 
 #[ScopedBy(MainTenantScope::class)]
-final class Tenant extends BaseTenant implements TenantWithDatabase
+final class Tenant extends BaseTenant implements HasMedia, TenantWithDatabase
 {
     /** @use HasFactory<TenantFactory> */
-    use HasDatabase, HasDomains, HasFactory;
+    use HasDatabase, HasDomains, HasFactory , HasMediaConversions;
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
         'name',
-        'type',
+        'tenant_type_id',
         'tenant_id',
         'data',
         'domain_name',
@@ -44,6 +47,8 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
         'end_working_day',
         'start_working_time',
         'end_working_time',
+        'trial_starts_at',
+        'trial_ends_at',
     ];
 
     /**
@@ -59,6 +64,8 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
         'number_of_secretaries' => 'integer',
         'start_working_time' => 'datetime:H:i',
         'end_working_time' => 'datetime:H:i',
+        'trial_starts_at' => 'datetime',
+        'trial_ends_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -69,6 +76,20 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
     public static function boot(): void
     {
         parent::boot();
+
+        self::creating(static function (Tenant $tenant): void {
+            if ($tenant->trial_starts_at === null) {
+                $tenant->trial_starts_at = now();
+            }
+
+            if ($tenant->trial_ends_at === null && $tenant->trial_starts_at !== null) {
+                $trialStart = $tenant->trial_starts_at instanceof Carbon
+                    ? $tenant->trial_starts_at
+                    : Carbon::parse((string) $tenant->trial_starts_at);
+
+                $tenant->trial_ends_at = $trialStart->copy()->addMonth();
+            }
+        });
 
         self::created(static function (Tenant $tenant) {
             $subdomain = mb_strtolower(str_replace(' ', '-', $tenant->domain_name));
@@ -93,5 +114,21 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
     public function subTenant(): HasMany
     {
         return $this->hasMany(self::class);
+    }
+
+    /**
+     * @return BelongsTo<TenantType, $this>
+     */
+    public function tenantType(): BelongsTo
+    {
+        return $this->belongsTo(TenantType::class);
+    }
+
+    /**
+     * @return HasMany<SubscriptionOrder, $this>
+     */
+    public function subscriptionOrders(): HasMany
+    {
+        return $this->hasMany(SubscriptionOrder::class);
     }
 }

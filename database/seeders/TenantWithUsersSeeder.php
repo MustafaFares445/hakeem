@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
-use App\Enums\TenantTypes;
 use App\Models\Tenant;
+use App\Models\TenantType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\UploadedFile;
@@ -23,17 +23,30 @@ final class TenantWithUsersSeeder extends Seeder
      */
     public function run(): void
     {
+        $tenantType = TenantType::query()->firstOrCreate(
+            ['key' => 'small_clinic'],
+            [
+                'name' => 'Small Clinic',
+                'description' => null,
+                'is_active' => true,
+            ]
+        );
+
+        $createdAt = now();
+
         DB::table('tenants')->insert([
             'id' => Str::uuid()->toString(),
-            'name' => 'عيادة الحكيم الطبية',
-            'type' => TenantTypes::SMALL_CLINIC->value,
+            'name' => 'Al Hakeem Clinic',
+            'tenant_type_id' => $tenantType->id,
             'domain_name' => 'alhakeem-clinic',
             'data' => json_encode([
-                'description' => 'عيادة طبية متخصصة في الرعاية الصحية الشاملة',
-                'address' => 'الرياض، المملكة العربية السعودية',
+                'description' => 'General medical clinic',
+                'address' => 'Riyadh, Saudi Arabia',
             ], JSON_THROW_ON_ERROR),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'trial_starts_at' => $createdAt,
+            'trial_ends_at' => $createdAt->copy()->addMonth(),
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
         ]);
 
         /** @var Tenant $tenant */
@@ -48,7 +61,7 @@ final class TenantWithUsersSeeder extends Seeder
         $secretariatRole = SpatieRole::where('name', RoleEnum::Secretariat->value)->first();
 
         $systemAdmin = User::create([
-            'name' => 'مدير النظام',
+            'name' => 'System Admin',
             'username' => 'system_admin',
             'email' => 'systemAdmin@hakeem.sy',
             'phone_number' => '0501234567',
@@ -59,7 +72,7 @@ final class TenantWithUsersSeeder extends Seeder
         $systemAdmin->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $doctor1 = User::create([
-            'name' => 'دكتور العيادة',
+            'name' => 'Clinic Doctor',
             'username' => 'doctor_clinic',
             'email' => 'doctor@hakeem.sy',
             'phone_number' => '0502345678',
@@ -71,7 +84,7 @@ final class TenantWithUsersSeeder extends Seeder
         $doctor1->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $doctor2 = User::create([
-            'name' => 'د. خالد سعد الدوسري',
+            'name' => 'Khalid Al Dossary',
             'username' => 'khalid_doctor',
             'email' => 'khalid@hakeem.sy',
             'phone_number' => '0503456789',
@@ -83,7 +96,7 @@ final class TenantWithUsersSeeder extends Seeder
         $doctor2->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $secretary1 = User::create([
-            'name' => 'سكريتاري العيادة',
+            'name' => 'Clinic Secretary',
             'username' => 'secretary_clinic',
             'email' => 'secretary@hakeem.sy',
             'phone_number' => '0504567890',
@@ -95,7 +108,7 @@ final class TenantWithUsersSeeder extends Seeder
         $secretary1->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
 
         $secretary2 = User::create([
-            'name' => 'نورا محمد الحربي',
+            'name' => 'Nora Al Harbi',
             'username' => 'nora_secretary',
             'email' => 'nora@hakeem.sy',
             'phone_number' => '0505678901',

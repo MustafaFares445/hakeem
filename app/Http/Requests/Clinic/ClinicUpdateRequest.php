@@ -32,6 +32,7 @@ final class ClinicUpdateRequest extends FormRequest
             'endWorkingDay' => ['sometimes', 'nullable', 'string', 'max:100'],
             'startWorkingTime' => ['sometimes', 'nullable', 'date_format:H:i'],
             'endWorkingTime' => ['sometimes', 'nullable', 'date_format:H:i'],
+            'primaryImage' => ['nullable', 'image', 'mimes:png,jpg,svg,webp', 'max:3000'],
         ];
     }
 }

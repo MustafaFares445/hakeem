@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Data\Auth\LoginData;
 use App\Data\Auth\RegisterData;
 use App\Data\Auth\ResetPasswordData;
+use App\Data\SubscriptionAccessResult;
 use App\Models\User;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -19,8 +20,14 @@ use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 final class AuthService
 {
+    public function __construct(private readonly SubscriptionAccessService $subscriptionAccessService) {}
+
     /**
-     * @return array{user: User, token: string}
+     * @return array{
+     *     user: User,
+     *     token: string,
+     *     subscriptionStatus: SubscriptionAccessResult
+     * }
      */
     public function login(LoginData $data): array
     {
@@ -31,8 +38,9 @@ final class AuthService
         Gate::forUser($user)->authorize('attempt-login', [$data->password]);
 
         return [
-            'user' => $user->load('tenant'),
+            'user' => $user->load('tenant.tenantType'),
             'token' => $user->createToken('api-token')->plainTextToken,
+            'subscriptionStatus' => $this->subscriptionAccessService->forUser($user),
         ];
     }
 

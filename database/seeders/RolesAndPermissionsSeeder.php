@@ -23,6 +23,8 @@ final class RolesAndPermissionsSeeder extends Seeder
             Permissions\BillingPermissionsSeeder::class,
             Permissions\MediaPermissionsSeeder::class,
             Permissions\BookingPermissionsSeeder::class,
+            Permissions\SubscriptionPlanPermissionsSeeder::class,
+            Permissions\SubscriptionOrderPermissionsSeeder::class,
             RolesSeeder::class,
         ]);
     }

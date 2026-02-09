@@ -28,6 +28,10 @@ describe('Login', function (): void {
                 'data' => [
                     'user',
                     'token',
+                    'subscriptionStatus' => [
+                        'canUseApp',
+                        'reason',
+                    ],
                 ],
                 'message',
             ])

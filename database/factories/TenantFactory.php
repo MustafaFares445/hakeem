@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\TenantTypes;
 use App\Models\Tenant;
+use App\Models\TenantType;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -36,16 +37,31 @@ final class TenantFactory extends Factory
     public function create($attributes = [], ?\Illuminate\Database\Eloquent\Model $parent = null): Tenant
     {
         $tenantId = $attributes['id'] ?? Str::uuid()->toString();
+        $tenantType = TenantType::query()->firstOrCreate(
+            ['key' => 'small_clinic'],
+            [
+                'name' => 'Small Clinic',
+                'description' => null,
+                'is_active' => true,
+            ]
+        );
+
+        $createdAt = $attributes['created_at'] ?? now();
+        $trialStartsAt = $attributes['trial_starts_at'] ?? $createdAt;
+        $trialStartsAtCarbon = $trialStartsAt instanceof Carbon ? $trialStartsAt : Carbon::parse((string) $trialStartsAt);
+        $trialEndsAt = $attributes['trial_ends_at'] ?? $trialStartsAtCarbon->copy()->addMonth();
 
         DB::table('tenants')->insert([
             'id' => $tenantId,
             'name' => $attributes['name'] ?? fake()->company(),
-            'type' => $attributes['type'] ?? TenantTypes::SMALL_CLINIC->value,
+            'tenant_type_id' => $attributes['tenant_type_id'] ?? $tenantType->id,
             'domain_name' => $attributes['domain_name'] ?? fake()->unique()->slug(),
             'data' => json_encode($attributes['data'] ?? [], JSON_THROW_ON_ERROR),
             'tenant_id' => $parent?->id,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'trial_starts_at' => $trialStartsAt,
+            'trial_ends_at' => $trialEndsAt,
+            'created_at' => $createdAt,
+            'updated_at' => $attributes['updated_at'] ?? now(),
         ]);
 
         return Tenant::find($tenantId);

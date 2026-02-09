@@ -14,6 +14,10 @@ use App\Http\Controllers\API\MediaController;
 use App\Http\Controllers\API\MedicalRecordController;
 use App\Http\Controllers\API\MedicalRecordTreatmentController;
 use App\Http\Controllers\API\PatientController;
+use App\Http\Controllers\API\SubscriptionOrderController;
+use App\Http\Controllers\API\SubscriptionPlanController;
+use App\Http\Controllers\API\SubscriptionStatusController;
+use App\Http\Controllers\API\TenantTypeController;
 use App\Http\Controllers\API\TreatmentController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
@@ -27,32 +31,41 @@ Route::prefix('auth')->group(function () {
     Route::put('/change-password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum');
 });
 
+Route::apiResource('/tenant-types', TenantTypeController::class)->only(['index']);
+Route::apiResource('/subscription-plans', SubscriptionPlanController::class)->only(['index']);
+
 Route::middleware(['auth:sanctum', 'tenant.by.user'])->group(function () {
-    Route::get('/clinic', [ClinicController::class, 'show']);
-    Route::put('/clinic', [ClinicController::class, 'update']);
+    Route::apiResource('/subscription-orders', SubscriptionOrderController::class)->only(['index', 'store']);
+    Route::patch('/subscription-orders/{subscriptionOrder}/cancel', [SubscriptionOrderController::class, 'update']);
+    Route::get('/subscription-status', [SubscriptionStatusController::class, 'show']);
 
-    Route::apiResource('/users', UserController::class);
+    Route::middleware('subscription.access')->group(function (): void {
+        Route::get('/clinic', [ClinicController::class, 'show']);
+        Route::put('/clinic', [ClinicController::class, 'update']);
 
-    Route::apiResource('/patients', PatientController::class);
-    Route::get('/patients/{patient}/tooth-overview', [PatientController::class, 'toothOverview']);
+        Route::apiResource('/users', UserController::class);
 
-    Route::apiResource('/chronic_diseases', ChronicDiseasesController::class);
+        Route::apiResource('/patients', PatientController::class);
+        Route::get('/patients/{patient}/tooth-overview', [PatientController::class, 'toothOverview']);
 
-    Route::apiResource('/chronic_medications', ChronicMedicationsController::class);
+        Route::apiResource('/chronic_diseases', ChronicDiseasesController::class);
 
-    Route::apiResource('/bookings', BookingController::class);
+        Route::apiResource('/chronic_medications', ChronicMedicationsController::class);
 
-    Route::apiResource('/billings', BillingController::class);
+        Route::apiResource('/bookings', BookingController::class);
 
-    Route::apiResource('/dental-labs', DentalLabController::class);
+        Route::apiResource('/billings', BillingController::class);
 
-    Route::apiResource('/treatments', TreatmentController::class);
+        Route::apiResource('/dental-labs', DentalLabController::class);
 
-    Route::apiResource('/filler-materials', FillerMaterialController::class);
+        Route::apiResource('/treatments', TreatmentController::class);
 
-    Route::apiResource('/medical-records', MedicalRecordController::class);
+        Route::apiResource('/filler-materials', FillerMaterialController::class);
 
-    Route::apiResource('/medical-record-treatments', MedicalRecordTreatmentController::class);
+        Route::apiResource('/medical-records', MedicalRecordController::class);
 
-    Route::apiResource('media', MediaController::class)->only(['index', 'store', 'show', 'destroy']);
+        Route::apiResource('/medical-record-treatments', MedicalRecordTreatmentController::class);
+
+        Route::apiResource('media', MediaController::class)->only(['index', 'store', 'show', 'destroy']);
+    });
 });

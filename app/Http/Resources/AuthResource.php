@@ -20,6 +20,9 @@ final class AuthResource extends JsonResource
             /** @example "Bearer" */
             'tokenType' => 'Bearer',
             'user' => UserResource::make($this->resource['user']),
+            'subscriptionStatus' => isset($this->resource['subscriptionStatus'])
+                ? SubscriptionStatusResource::make($this->resource['subscriptionStatus'])
+                : null,
         ];
     }
 }

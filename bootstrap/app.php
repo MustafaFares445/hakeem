@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\EnsureTenantSubscriptionIsActive;
 use App\Http\Middleware\InitializeTenancyByUser;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => InitializeTenancyByDomain::class,
             'tenant.by.user' => InitializeTenancyByUser::class,
+            'subscription.access' => EnsureTenantSubscriptionIsActive::class,
             'prevent-access-from-central-domains' => PreventAccessFromCentralDomains::class,
         ]);
 
