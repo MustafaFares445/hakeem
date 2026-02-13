@@ -33,9 +33,10 @@ final class TenantWithUsersSeeder extends Seeder
         );
 
         $createdAt = now();
+        $tenantId = Str::uuid()->toString();
 
         DB::table('tenants')->insert([
-            'id' => Str::uuid()->toString(),
+            'id' => $tenantId,
             'name' => 'Al Hakeem Clinic',
             'tenant_type_id' => $tenantType->id,
             'domain_name' => 'alhakeem-clinic',
@@ -50,26 +51,33 @@ final class TenantWithUsersSeeder extends Seeder
         ]);
 
         /** @var Tenant $tenant */
-        $tenant = Tenant::firstOrFail();
+        $tenant = Tenant::query()->findOrFail($tenantId);
 
-        $tenant->domains()->create([
-            'domain' => 'alhakeem-clinic.'.config('tenancy.default_domain'),
-        ]);
+        $tenant->domains()->firstOrCreate(
+            ['domain' => 'alhakeem-clinic.'.config('tenancy.default_domain')],
+            ['domain' => 'alhakeem-clinic.'.config('tenancy.default_domain')]
+        );
 
         $systemAdminRole = SpatieRole::where('name', RoleEnum::SystemAdmin->value)->first();
         $doctorRole = SpatieRole::where('name', RoleEnum::Doctor->value)->first();
         $secretariatRole = SpatieRole::where('name', RoleEnum::Secretariat->value)->first();
 
-        $systemAdmin = User::create([
-            'name' => 'System Admin',
-            'username' => 'system_admin',
-            'email' => 'systemAdmin@hakeem.sy',
-            'phone_number' => '0501234567',
-            'password' => Hash::make('password123'),
-            'email_verified_at' => now(),
-        ]);
-        $systemAdmin->assignRole($systemAdminRole);
-        $systemAdmin->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
+        $systemAdmin = User::firstOrCreate(
+            ['username' => 'system_admin'],
+            [
+                'name' => 'System Admin',
+                'email' => 'systemAdmin@hakeem.sy',
+                'phone_number' => '0501234567',
+                'password' => Hash::make('password123'),
+                'email_verified_at' => now(),
+            ]
+        );
+        if (! $systemAdmin->hasRole($systemAdminRole)) {
+            $systemAdmin->assignRole($systemAdminRole);
+        }
+        if ($systemAdmin->wasRecentlyCreated) {
+            $systemAdmin->addMedia(UploadedFile::fake()->image('avatar.jpg', 100, 100))->toMediaCollection('primary-image');
+        }
 
         $doctor1 = User::create([
             'name' => 'Clinic Doctor',

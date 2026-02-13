@@ -36,7 +36,9 @@ final class SubscriptionOrderFactory extends Factory
             'starts_at' => null,
             'ends_at' => null,
             'confirmed_at' => null,
+            'confirmed_by_user_id' => null,
             'cancelled_at' => null,
+            'cancelled_by_user_id' => null,
             'cancellation_reason' => null,
         ];
     }

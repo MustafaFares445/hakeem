@@ -162,15 +162,20 @@ When using `--service --pattern=spatie-data --filter`, the command generates:
 
 | File | Description |
 |------|-------------|
-| [docs/api/medical-record-api-contract.md](docs/api/medical-record-api-contract.md) | API contract for the Medical Record feature (Flutter / frontend integration) |
+| [docs/api/auth-api-contract.md](docs/api/auth-api-contract.md) | API contract for Authentication (login, logout, forgot/reset password, update profile, change password) |
 | [docs/api/booking-api-contract.md](docs/api/booking-api-contract.md) | API contract for the Booking (Calendar / Appointments) feature (Flutter / frontend integration) |
-| [docs/api/patient-management-api-contract.md](docs/api/patient-management-api-contract.md) | API contract for the Patient Management feature (Flutter / frontend integration) |
-| [docs/api/user-management-api-contract.md](docs/api/user-management-api-contract.md) | API contract for the User Management feature (Flutter / frontend integration) |
+| [docs/api/billing-api-contract.md](docs/api/billing-api-contract.md) | API contract for the Billing feature (incoming/outgoing entries) |
 | [docs/api/chronic-diseases-api-contract.md](docs/api/chronic-diseases-api-contract.md) | API contract for the Chronic Diseases feature (Flutter / frontend integration) |
 | [docs/api/chronic-medications-api-contract.md](docs/api/chronic-medications-api-contract.md) | API contract for the Chronic Medications feature (Flutter / frontend integration) |
+| [docs/api/clinic-api-contract.md](docs/api/clinic-api-contract.md) | API contract for the Clinic (current tenant) feature |
 | [docs/api/dental-labs-api-contract.md](docs/api/dental-labs-api-contract.md) | API contract for the Dental Labs feature (Flutter / frontend integration) |
-| [docs/api/treatments-api-contract.md](docs/api/treatments-api-contract.md) | API contract for the Treatments feature (Flutter / frontend integration) |
 | [docs/api/filler-materials-api-contract.md](docs/api/filler-materials-api-contract.md) | API contract for the Filler Materials feature (Flutter / frontend integration) |
+| [docs/api/media-api-contract.md](docs/api/media-api-contract.md) | API contract for the Media (Files/Documents) feature (Flutter / frontend integration) |
+| [docs/api/medical-record-api-contract.md](docs/api/medical-record-api-contract.md) | API contract for the Medical Record feature (Flutter / frontend integration) |
+| [docs/api/patient-management-api-contract.md](docs/api/patient-management-api-contract.md) | API contract for the Patient Management feature (Flutter / frontend integration) |
+| [docs/api/subscription-and-tenant-types-api-contract.md](docs/api/subscription-and-tenant-types-api-contract.md) | API contract for Tenant Types, Subscription Plans, Subscription Orders, and Subscription Status |
+| [docs/api/treatments-api-contract.md](docs/api/treatments-api-contract.md) | API contract for the Treatments feature (Flutter / frontend integration) |
+| [docs/api/user-management-api-contract.md](docs/api/user-management-api-contract.md) | API contract for the User Management feature (Flutter / frontend integration) |
 | [CLAUDE.md](CLAUDE.md) | Project and Laravel Boost guidelines for AI assistants |
 | [TEST_ISSUES_REPORT.md](TEST_ISSUES_REPORT.md) | Test issues and notes |
 

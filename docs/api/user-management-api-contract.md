@@ -15,7 +15,7 @@ All routes are prefixed with `/api`. Base URL: `https://hakeem.mustafafares.com/
 All User endpoints require authentication via **Laravel Sanctum**:
 
 - **Header:** `Authorization: Bearer <token>`
-- **Obtain token:** `POST /api/auth/login` with `username` and `password` (or `email` and `password`, depending on backend configuration).
+- **Obtain token:** `POST /api/auth/login` with `username` and `password`. For full auth endpoints, see [Auth API contract](auth-api-contract.md).
 
 Unauthenticated requests receive **401 Unauthorized**.
 
@@ -144,14 +144,15 @@ Used for: Staff/doctor list, “Select Doctor(s)” in [appointments](booking-ap
 |-------|------|-------------|
 | `id` | string (UUID) | Primary key |
 | `name` | string | Full name |
+| `username` | string | Login username |
 | `email` | string | Email |
-| `emailVerifiedAt` | string \| null | ISO date-time when email was verified |
+| `phoneNumber` | string \| null | Phone number |
+| `language` | string \| null | Language code (e.g. `en`) |
+| `timeFormat` | string \| null | Time format (e.g. `12hr`) |
 | `primaryImage` | object \| null | Media resource when loaded (id, name, url, etc.) |
-| `tenant` | object | Tenant resource when loaded |
+| `tenant` | object \| null | Tenant resource when loaded |
 | `createdAt` | string | ISO date-time |
 | `updatedAt` | string | ISO date-time |
-
-**Note:** The current API resource does not expose `username` or `roles` in the response. Roles are stored for authorization (e.g. doctor, admin). Use `GET /api/users` for listing doctors/staff; filter by role on the backend if such an endpoint or query param is added.
 
 ---
 

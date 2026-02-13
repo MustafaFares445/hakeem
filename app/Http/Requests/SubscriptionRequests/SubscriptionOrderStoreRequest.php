@@ -36,8 +36,8 @@ final class SubscriptionOrderStoreRequest extends FormRequest
                     }
                 }),
                 new SubscriptionPlanHasValidDurationRule(),
-                new NoPendingSubscriptionOrderRule(),
-                new NoActiveLifetimeSubscriptionRule(),
+                new NoPendingSubscriptionOrderRule($tenant?->id),
+                new NoActiveLifetimeSubscriptionRule($tenant?->id),
             ],
             'transactionImage' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];

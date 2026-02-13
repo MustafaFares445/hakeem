@@ -15,7 +15,7 @@ All routes are prefixed with `/api`. Base URL: `https://hakeem.mustafafares.com/
 All Filler Material endpoints require authentication via **Laravel Sanctum**:
 
 - **Header:** `Authorization: Bearer <token>`
-- **Obtain token:** `POST /api/auth/login` with `username` and `password` (or `email` and `password`, depending on backend configuration).
+- **Obtain token:** `POST /api/auth/login` with `username` and `password`.
 
 Unauthenticated requests receive **401 Unauthorized**.
 

@@ -12,8 +12,13 @@ final class SubscriptionPlanPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        Permission::firstOrCreate([
-            'name' => PermissionNameResolver::resolve('subscription_plans', 'view'),
-        ]);
+        $group = 'subscription_plans';
+        $actions = ['view', 'create', 'update', 'delete'];
+
+        foreach ($actions as $action) {
+            Permission::firstOrCreate([
+                'name' => PermissionNameResolver::resolve($group, $action),
+            ]);
+        }
     }
 }

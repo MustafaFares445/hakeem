@@ -49,6 +49,10 @@ final class Tenant extends BaseTenant implements HasMedia, TenantWithDatabase
         'end_working_time',
         'trial_starts_at',
         'trial_ends_at',
+        'is_suspended',
+        'suspended_at',
+        'suspension_reason',
+        'suspended_by_user_id',
     ];
 
     /**
@@ -66,6 +70,8 @@ final class Tenant extends BaseTenant implements HasMedia, TenantWithDatabase
         'end_working_time' => 'datetime:H:i',
         'trial_starts_at' => 'datetime',
         'trial_ends_at' => 'datetime',
+        'is_suspended' => 'boolean',
+        'suspended_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -122,6 +128,14 @@ final class Tenant extends BaseTenant implements HasMedia, TenantWithDatabase
     public function tenantType(): BelongsTo
     {
         return $this->belongsTo(TenantType::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function suspendedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'suspended_by_user_id');
     }
 
     /**

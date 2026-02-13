@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Media\ServeMediaAction;
 use App\Data\MediaStoreData;
 use App\Http\Requests\MediaRequests\MediaFilterRequest;
 use App\Http\Requests\MediaRequests\MediaStoreRequest;
@@ -15,13 +16,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 final readonly class MediaController
 {
     use AuthorizesRequests;
 
-    public function __construct(private MediaService $mediaService) {}
+    public function __construct(
+        private MediaService $mediaService,
+        private ServeMediaAction $serveMediaAction
+    ) {}
 
     /**
      * @return AnonymousResourceCollection<int, MediaResource>
@@ -58,6 +63,20 @@ final readonly class MediaController
 
         return MediaResource::make($medium)
             ->additional(['message' => ResponseMessages::RETRIEVED->message()]);
+    }
+
+    public function download(Media $medium): StreamedResponse
+    {
+        $this->authorize('view', $medium);
+
+        return $this->serveMediaAction->download($medium);
+    }
+
+    public function stream(Media $medium): StreamedResponse
+    {
+        $this->authorize('view', $medium);
+
+        return $this->serveMediaAction->stream($medium);
     }
 
     public function destroy(Media $medium): MediaResource

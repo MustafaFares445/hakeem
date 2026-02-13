@@ -15,7 +15,7 @@ All routes are prefixed with `/api`. Base URL: `https://hakeem.mustafafares.com/
 All Chronic Medications endpoints require authentication via **Laravel Sanctum**:
 
 - **Header:** `Authorization: Bearer <token>`
-- **Obtain token:** `POST /api/auth/login` with `username` and `password` (or `email` and `password`, depending on backend configuration).
+- **Obtain token:** `POST /api/auth/login` with `username` and `password`.
 
 Unauthenticated requests receive **401 Unauthorized**.
 
@@ -71,7 +71,7 @@ Used for: **Patient profile – “Chronic Medications” tab**; filter by `pati
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `perPage` | integer | Page size (1–100). Default: 20 |
-| `filter[patientId]` | UUID | Filter by patient |
+| `filter[patientId]` | string | Partial match on patient ID |
 | `filter[title]` | string | Partial match on title |
 | `filter[createdAfter]` | date | Created at ≥ |
 | `filter[createdBefore]` | date | Created at ≤ |

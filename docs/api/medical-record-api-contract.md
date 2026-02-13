@@ -15,7 +15,7 @@ All routes are prefixed with `/api`. Base URL: `https://hakeem.mustafafares.com/
 All Medical Record endpoints require authentication via **Laravel Sanctum**:
 
 - **Header:** `Authorization: Bearer <token>`
-- **Obtain token:** `POST /api/auth/login` with `username` and `password` (or `email` and `password`, depending on backend configuration).
+- **Obtain token:** `POST /api/auth/login` with `username` and `password`.
 
 Unauthenticated requests receive **401 Unauthorized**.
 
@@ -132,7 +132,7 @@ Use these values as-is in `toothPosition` for medical record treatments. Display
 | `filter[createdAfter]` | date | Created at ≥ |
 | `filter[createdBefore]` | date | Created at ≤ |
 | `search` | string | Search in case name and description |
-| `sort` | string | `recordDate`, `-recordDate`, `caseName`, `-caseName`, `createdAt`, `-createdAt`. Default: `-created_at` |
+| `sort` | string | `recordDate`, `-recordDate`, `caseName`, `-caseName`. Default: `-created_at` |
 
 **Response:** Paginated collection with `data`, `links`, `meta`. Each item follows the Medical Record resource shape below.
 
@@ -195,9 +195,9 @@ Use these values as-is in `toothPosition` for medical record treatments. Display
 | `recordType` | string | `in_clinic` or `external` |
 | `caseName` | string | Case title |
 | `description` | string \| null | Case description |
-| `totalCost` | string (decimal) \| null | Derived from linked billings when present |
-| `amountPaid` | string (decimal) \| null | Sum of paid amounts from linked billings |
-| `remainingAmount` | string (decimal) \| null | Derived (totalCost − amountPaid) when billings exist |
+| `totalCost` | number \| null | Max of linked billings’ total_cost when `billings` relation is loaded |
+| `amountPaid` | number | Sum of linked billings’ paid_amount when `billings` relation is loaded (0 if none) |
+| `remainingAmount` | number | totalCost − amountPaid when billings are loaded |
 | `treatments` | array | List of medical record treatment resources when loaded |
 | `attachments` | array | List of media objects when loaded |
 | `createdAt` | string | ISO date-time |

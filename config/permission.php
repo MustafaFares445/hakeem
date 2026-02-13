@@ -201,5 +201,5 @@ return [
 
         'store' => 'default',
     ],
-    'dashboard_role' => 'admin'
+    'dashboard_role' => 'system admin',
 ];

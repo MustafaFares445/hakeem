@@ -37,7 +37,9 @@ final class SubscriptionOrder extends Model implements HasMedia
         'starts_at',
         'ends_at',
         'confirmed_at',
+        'confirmed_by_user_id',
         'cancelled_at',
+        'cancelled_by_user_id',
         'cancellation_reason',
     ];
 
@@ -63,6 +65,22 @@ final class SubscriptionOrder extends Model implements HasMedia
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function confirmedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'confirmed_by_user_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function cancelledByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by_user_id');
     }
 
     /**

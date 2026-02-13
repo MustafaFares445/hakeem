@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Enums\SubscriptionAccessReasonEnum;
 use App\Models\Tenant;
 use App\Services\SubscriptionAccessService;
 use Closure;
@@ -31,14 +32,19 @@ final class EnsureTenantSubscriptionIsActive
             return $next($request);
         }
 
+        $message = $status->reason === SubscriptionAccessReasonEnum::TenantSuspended
+            ? __('Tenant access is suspended: :reason', ['reason' => $status->suspensionReason ?? __('No reason provided')])
+            : __('Subscription is inactive. Please renew your plan.');
+
         return new JsonResponse([
-            'message' => __('Subscription is inactive. Please renew your plan.'),
+            'message' => $message,
             'subscriptionStatus' => [
                 'canUseApp' => $status->canUseApp,
                 'reason' => $status->reason->value,
                 'trialEndsAt' => $status->trialEndsAt?->toIso8601String(),
                 'activeUntil' => $status->activeUntil?->toIso8601String(),
                 'hasPendingOrder' => $status->hasPendingOrder,
+                'suspensionReason' => $status->suspensionReason,
             ],
         ], Response::HTTP_PAYMENT_REQUIRED);
     }
