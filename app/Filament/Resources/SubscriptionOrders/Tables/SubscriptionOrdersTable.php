@@ -37,7 +37,7 @@ final class SubscriptionOrdersTable
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (SubscriptionOrderStatusEnum|string $state): string => match ($state instanceof SubscriptionOrderStatusEnum ? $state->value : $state) {
                         SubscriptionOrderStatusEnum::Pending->value => 'warning',
                         SubscriptionOrderStatusEnum::Confirmed->value => 'success',
                         SubscriptionOrderStatusEnum::Cancelled->value => 'danger',

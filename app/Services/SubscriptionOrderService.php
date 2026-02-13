@@ -20,14 +20,17 @@ use Throwable;
 
 final readonly class SubscriptionOrderService
 {
-    public function __construct(private AdminActionLogService $adminActionLogService) {}
+    public function __construct(
+        private AdminActionLogService $adminActionLogService,
+        private AdminNotificationService $adminNotificationService,
+    ) {}
 
     /**
      * @throws Throwable
      */
     public function store(SubscriptionOrderData $data, SubscriptionPlan $plan): SubscriptionOrder
     {
-        return DB::transaction(static function () use ($data, $plan): SubscriptionOrder {
+        $order = DB::transaction(static function () use ($data, $plan): SubscriptionOrder {
             $order = SubscriptionOrder::query()->create([
                 'subscription_plan_id' => $data->subscriptionPlanId,
                 'created_by_user_id' => Auth::id(),
@@ -46,6 +49,10 @@ final readonly class SubscriptionOrderService
 
             return $order->load('media');
         });
+
+        $this->adminNotificationService->notifyNewPendingOrder($order);
+
+        return $order;
     }
 
     /**

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\SubscriptionOrders;
 
+use App\Filament\Resources\AdminResource;
 use App\Filament\Resources\SubscriptionOrders\Pages\ListSubscriptionOrders;
 use App\Filament\Resources\SubscriptionOrders\Schemas\SubscriptionOrderForm;
 use App\Filament\Resources\SubscriptionOrders\Tables\SubscriptionOrdersTable;
 use App\Models\SubscriptionOrder;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-final class SubscriptionOrderResource extends Resource
+final class SubscriptionOrderResource extends AdminResource
 {
     protected static ?string $model = SubscriptionOrder::class;
 
@@ -47,10 +47,5 @@ final class SubscriptionOrderResource extends Resource
         return [
             'index' => ListSubscriptionOrders::route('/'),
         ];
-    }
-
-    public static function canCreate(): bool
-    {
-        return false;
     }
 }

@@ -15,6 +15,8 @@ final class DatabaseSeeder extends Seeder
             TenantTypesSeeder::class,
             SubscriptionPlansSeeder::class,
             RolesAndPermissionsSeeder::class,
+            UserSeeder::class,
+            DashboardSeeder::class,
             ArabicDataSeeder::class,
         ]);
     }

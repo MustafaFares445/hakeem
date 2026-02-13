@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\SubscriptionPlans;
 
+use App\Filament\Resources\AdminResource;
 use App\Filament\Resources\SubscriptionPlans\Pages\CreateSubscriptionPlan;
 use App\Filament\Resources\SubscriptionPlans\Pages\EditSubscriptionPlan;
 use App\Filament\Resources\SubscriptionPlans\Pages\ListSubscriptionPlans;
@@ -11,13 +12,12 @@ use App\Filament\Resources\SubscriptionPlans\Schemas\SubscriptionPlanForm;
 use App\Filament\Resources\SubscriptionPlans\Tables\SubscriptionPlansTable;
 use App\Models\SubscriptionPlan;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-final class SubscriptionPlanResource extends Resource
+final class SubscriptionPlanResource extends AdminResource
 {
     protected static ?string $model = SubscriptionPlan::class;
 

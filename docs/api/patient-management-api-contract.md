@@ -15,7 +15,7 @@ All routes are prefixed with `/api`. Base URL: `https://hakeem.mustafafares.com/
 All Patient endpoints require authentication via **Laravel Sanctum**:
 
 - **Header:** `Authorization: Bearer <token>`
-- **Obtain token:** `POST /api/auth/login` with `username` and `password` (or `email` and `password`, depending on backend configuration).
+- **Obtain token:** `POST /api/auth/login` with `username` and `password`. For full login, logout, and password flows, see [Auth API contract](auth-api-contract.md).
 
 Unauthenticated requests receive **401 Unauthorized**.
 
@@ -98,7 +98,7 @@ Used for: **Patient List** screen, and for dropdowns (e.g. “Select patient” 
 | `filter[createdAfter]` | date | Created at ≥ |
 | `filter[createdBefore]` | date | Created at ≤ |
 | `search` | string | Search across name, email, phone_number, gender, city, street_address, notes |
-| `sort` | string | `name`, `-name`, `email`, `-email`, `phoneNumber`, `-phoneNumber`, `birthday`, `-birthday`, `gender`, `-gender`, `city`, `-city`, `streetAddress`, `-streetAddress`, `registrationDate`, `-registrationDate`, `notes`, `-notes`. Default: `-created_at` |
+| `sort` | string | `name`, `-name`, `email`, `-email`, `phoneNumber`, `-phoneNumber`, `birthday`, `-birthday`, `gender`, `-gender`, `city`, `-city`, `streetAddress`, `-streetAddress`, `registrationDate`, `-registrationDate`, `notes`, `-notes`, `created_at`, `-created_at`. Default: `-created_at` |
 
 **Response:** Paginated collection with `data`, `links`, `meta`. Each item follows the Patient resource shape below.
 
@@ -135,7 +135,7 @@ Used for: **“New Patient”** form (Save). Send as **`multipart/form-data`** i
 
 Used for: **Patient profile** header and details (name, email, demographics, notes). Use with related endpoints for Appointments tab, Medical Record tab, Chronic Diseases tab, and Files.
 
-**Response:** `200 OK`. Single patient resource with `primaryImage` loaded.
+**Response:** `200 OK`. Single patient resource with `primaryImage`, `lastAppointment`, and `firstAppointment` loaded (see Patient resource shape).
 
 ---
 
@@ -184,6 +184,8 @@ Used for: **Patient profile – “Medical Record” tab – “Tooth Overview�
 | `registrationDate` | string | Date only, `YYYY-MM-DD` |
 | `notes` | string \| null | Internal notes |
 | `primaryImage` | object \| null | Media resource when loaded (see below) |
+| `lastAppointment` | object \| null | Booking resource when loaded (only on `GET /api/patients/{id}`) |
+| `firstAppointment` | object \| null | Booking resource when loaded (only on `GET /api/patients/{id}`) |
 | `createdAt` | string | ISO date-time |
 | `updatedAt` | string | ISO date-time |
 
@@ -202,7 +204,7 @@ Used for: **Patient profile – “Medical Record” tab – “Tooth Overview�
 | Delete patient | DELETE | `/api/patients/{id}` | Delete patient (if exposed) |
 | Tooth overview | GET | `/api/patients/{id}/tooth-overview` | Medical Record tab – Tooth Overview / Tooth Details |
 | Patient’s medical records | GET | `/api/medical-records?filter[patientId]={id}` | Medical Record tab – timeline; see [Medical Record API contract](medical-record-api-contract.md) |
-| Patient’s appointments | GET | `/api/appointments?filter[patientId]={id}` | Appointments tab – timeline; see [Booking API contract](booking-api-contract.md) |
+| Patient’s appointments | GET | `/api/bookings?filter[patientId]={id}` | Appointments tab – timeline; see [Booking API contract](booking-api-contract.md) |
 | Patient’s chronic diseases | GET | `/api/chronic_diseases?filter[patientId]={id}` | Chronic Diseases tab; create/update via `/api/chronic_diseases` with `patientId` |
 | Patient’s chronic medications | GET | `/api/chronic_medications?filter[patientId]={id}` | Chronic Medications tab; create/update via `/api/chronic_medications` with `patientId` |
 
@@ -230,7 +232,7 @@ Used for: **Patient profile – “Medical Record” tab – “Tooth Overview�
 | Notes card | `notes` from patient resource; edit via `PATCH /api/patients/{id}` with `notes` |
 | “Edit Patient” button | Load form from patient resource; submit via `PUT /api/patients/{id}` |
 | “Print” | Client-side print using patient and tab data already loaded |
-| Tab: Appointments | `GET /api/appointments?filter[patientId]={id}&sort=-appointmentDate` |
+| Tab: Appointments | `GET /api/bookings?filter[patientId]={id}&sort=-date` |
 | Tab: Medical Record | `GET /api/medical-records?filter[patientId]={id}`; Tooth Overview: `GET /api/patients/{id}/tooth-overview` |
 | Tab: Chronic Diseases | `GET /api/chronic_diseases?filter[patientId]={id}` |
 | Files/Documents | Confirm with backend (patient media or separate document API) |

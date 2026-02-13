@@ -1,23 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
-class UserSeeder extends Seeder
+final class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $user = User::factory()->create([
-            'name' => 'system admin',
+            'name' => 'System Admin',
             'username' => 'system_admin',
-            'email' => 'systemAdmin@hakeem.com',
-            'password' => 'secret',
+            'email' => 'systemAdmin@hakeem.sy',
+            'password' => Hash::make('password123'),
         ]);
 
         $user->assignRole('system admin');

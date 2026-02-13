@@ -50,7 +50,14 @@ it('allows system admins to access admin resources', function (): void {
     ]);
     $user->assignRole(RoleEnum::SystemAdmin->value);
 
-    foreach (['/admin/tenants', '/admin/subscription-plans', '/admin/subscription-orders', '/admin/users'] as $uri) {
+    foreach ([
+        '/admin/tenants',
+        '/admin/subscription-plans',
+        '/admin/subscription-orders',
+        '/admin/users',
+        '/admin/admin-action-logs',
+        '/admin/health',
+    ] as $uri) {
         $this->actingAs($user)
             ->get($uri)
             ->assertOk();

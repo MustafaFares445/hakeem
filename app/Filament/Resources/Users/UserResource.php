@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Users;
 
 use App\Enums\RoleEnum;
+use App\Filament\Resources\AdminResource;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
-final class UserResource extends Resource
+final class UserResource extends AdminResource
 {
     protected static ?string $model = User::class;
 

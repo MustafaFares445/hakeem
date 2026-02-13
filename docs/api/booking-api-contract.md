@@ -15,7 +15,7 @@ All routes are prefixed with `/api`. Base URL: `https://hakeem.mustafafares.com/
 All Booking endpoints require authentication via **Laravel Sanctum**:
 
 - **Header:** `Authorization: Bearer <token>`
-- **Obtain token:** `POST /api/auth/login` with `username` and `password` (or `email` and `password`, depending on backend configuration).
+- **Obtain token:** `POST /api/auth/login` with `username` and `password`. For full auth endpoints, see [Auth API contract](auth-api-contract.md).
 
 Unauthenticated requests receive **401 Unauthorized**.
 
@@ -96,9 +96,12 @@ Used for: **Calendar weekly/monthly view**, **Patient Appointments tab** (filter
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `perPage` | integer | Page size (1–100). Default: 20 |
-| `filter[patientId]` | UUID | Filter by patient (e.g. patient profile “Appointments” tab) |
-| `filter[userId]` | UUID | Filter by assigned doctor |
-| `filter[date]` | date (Y-m-d) | Exact match on booking date |
+| `filter[patientId]` | UUID | Filter by patient (e.g. patient profile “Appointments” tab); use `null` for bookings with no patient |
+| `filter[tenantId]` | UUID | Filter by tenant; use `null` for unassigned |
+| `filter[userId]` | UUID | Filter by assigned doctor; use `null` for unassigned |
+| `filter[date]` | date (Y-m-d) | Partial match on booking date |
+| `filter[startDate]` | date (Y-m-d) | Booking date ≥ |
+| `filter[endDate]` | date (Y-m-d) | Booking date ≤ |
 | `filter[time]` | string | Partial match on time |
 | `filter[appointmentType]` | string | `preview`, `surgery`, or `review` |
 | `filter[createdAfter]` | date | Created at ≥ |
@@ -106,9 +109,9 @@ Used for: **Calendar weekly/monthly view**, **Patient Appointments tab** (filter
 | `search` | string | Search (backend-defined) |
 | `sort` | string | `date`, `-date`, `time`, `-time`, `appointmentType`, `-appointmentType`, `userId`, `-userId`, `patientId`, `-patientId`. Default: `-created_at` |
 
-**Response:** Paginated collection with `data`, `links`, `meta`. Each item follows the Booking resource shape below.
+**Response:** Paginated collection with `data`, `links`, `meta`. Each item follows the Booking resource shape below. The **list** endpoint eager-loads `patient` and `user` (and their `primaryImage` when available), so calendar and patient-tab responses include nested patient and user objects. Use these for display without extra lookups.
 
-**Calendar usage:** Request a date range by filtering on `filter[date]` or use `filter[createdAfter]` / `filter[createdBefore]` for date range. Optionally filter by `userId` and use `search` for the header search bar.
+**Calendar usage:** Request a date range with `filter[startDate]` and `filter[endDate]` (on booking date), or `filter[createdAfter]` / `filter[createdBefore]`. Optionally filter by `userId` and use `search` for the header search bar.
 
 **Patient tab usage:** `GET /api/bookings?filter[patientId]={patientId}&sort=-date&perPage=20`.
 
@@ -140,7 +143,7 @@ Triggered by the **(+) “Add New Appointment”** button in the Calendar header
 
 Used when the user clicks an appointment block (**“Preview”** or options) to view full details.
 
-**Response:** `200 OK`. Single booking resource.
+**Response:** `200 OK`. Single booking resource. The show endpoint does not eager-load `patient` or `user` by default; use the list endpoint when you need nested patient/user for calendar or profile views.
 
 ---
 
@@ -171,6 +174,8 @@ Used from the **(...)** options menu on an appointment block.
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string (UUID) | Primary key |
+| `patient` | object \| null | Patient resource when loaded (in list response) |
+| `user` | object \| null | User (doctor) resource when loaded (in list response) |
 | `patientId` | string (UUID) | Patient reference |
 | `tenantId` | string (UUID) | Tenant reference |
 | `userId` | string (UUID) | Assigned doctor (user) reference |
@@ -180,7 +185,7 @@ Used from the **(...)** options menu on an appointment block.
 | `createdAt` | string | ISO date-time |
 | `updatedAt` | string | ISO date-time |
 
-**Note:** The current API resource does not nest `patient` or `user` (doctor) objects. Use `patientId` and `userId` with `GET /api/patients/{id}` and `GET /api/users/{id}` when you need names for display.
+**Note:** The **list** endpoint (`GET /api/bookings`) returns each item with nested `patient` and `user` (and their `primaryImage` when loaded). The **show** endpoint does not eager-load them; use list when you need names and details for calendar or patient-appointments views.
 
 ---
 

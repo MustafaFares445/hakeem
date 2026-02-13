@@ -26,13 +26,17 @@ final class ArabicMedicalDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $tenant = Tenant::firstOrFail();
+        $tenant = Tenant::query()->where('domain_name', 'alhakeem-clinic')->firstOrFail();
 
         $doctors = User::where('tenant_id', $tenant->id)
             ->whereHas('roles', fn ($q) => $q->where('name', RoleEnum::Doctor->value))
             ->get();
         $doctor1 = $doctors->get(0);
-        $doctor2 = $doctors->get(1);
+        $doctor2 = $doctors->get(1) ?? $doctor1;
+
+        if ($doctor1 === null) {
+            return;
+        }
 
         $fillerMaterialModels = FillerMaterial::where('tenant_id', $tenant->id)->get();
         $dentalLabModels = DentalLab::where('tenant_id', $tenant->id)->get();
