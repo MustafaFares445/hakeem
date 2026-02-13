@@ -16,5 +16,6 @@ final class SubscriptionAccessResult extends Data
         public ?CarbonImmutable $trialEndsAt,
         public ?CarbonImmutable $activeUntil,
         public bool $hasPendingOrder,
+        public ?string $suspensionReason = null,
     ) {}
 }

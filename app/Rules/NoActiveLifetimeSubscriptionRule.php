@@ -11,9 +11,16 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class NoActiveLifetimeSubscriptionRule implements ValidationRule
 {
+    public function __construct(private readonly ?string $tenantId) {}
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if ($this->tenantId === null) {
+            return;
+        }
+
         $hasLifetimeAccess = SubscriptionOrder::query()
+            ->where('tenant_id', $this->tenantId)
             ->where('status', SubscriptionOrderStatusEnum::Confirmed->value)
             ->where('is_lifetime', true)
             ->where(function ($query): void {

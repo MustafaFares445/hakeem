@@ -6,6 +6,7 @@ namespace App\Enums;
 
 enum SubscriptionAccessReasonEnum: string
 {
+    case TenantSuspended = 'tenant_suspended';
     case TrialActive = 'trial_active';
     case SubscriptionActive = 'subscription_active';
     case LifetimeActive = 'lifetime_active';

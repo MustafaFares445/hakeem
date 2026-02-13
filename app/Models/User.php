@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\RoleEnum;
 use App\Traits\FilterQueries\UserFilterQuery;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,7 +35,7 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  */
-final class User extends Authenticatable implements HasMedia, MustVerifyEmail
+final class User extends Authenticatable implements FilamentUser, HasMedia, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use BelongsToTenant, HasApiTokens, HasFactory, HasMediaConversions, HasRoles, HasUuids, Notifiable, UserFilterQuery;
@@ -74,5 +77,12 @@ final class User extends Authenticatable implements HasMedia, MustVerifyEmail
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'admin'
+            && $this->tenant_id === null
+            && $this->hasRole(RoleEnum::SystemAdmin->value);
     }
 }

@@ -30,11 +30,12 @@ final readonly class SubscriptionAccessService
      * Resolve subscription access for a tenant.
      *
      * Decision order (highest priority first):
-     * 1. Active lifetime subscription
-     * 2. Active timed subscription
-     * 3. Active trial
-     * 4. Pending order
-     * 5. Renewal required
+     * 1. Tenant suspension
+     * 2. Active lifetime subscription
+     * 3. Active timed subscription
+     * 4. Active trial
+     * 5. Pending order
+     * 6. Renewal required
      */
     public function forTenant(?Tenant $tenant): SubscriptionAccessResult
     {
@@ -42,6 +43,10 @@ final readonly class SubscriptionAccessService
 
         if ($tenant === null) {
             return $this->renewalRequired();
+        }
+
+        if ($tenant->is_suspended) {
+            return $this->tenantSuspended($tenant);
         }
 
         $trialEndsAt = $this->trialEndsAt($tenant);
@@ -173,6 +178,21 @@ final readonly class SubscriptionAccessService
             trialEndsAt: null,
             activeUntil: null,
             hasPendingOrder: false,
+        );
+    }
+
+    /**
+     * Build a suspended-tenant access result.
+     */
+    private function tenantSuspended(Tenant $tenant): SubscriptionAccessResult
+    {
+        return new SubscriptionAccessResult(
+            canUseApp: false,
+            reason: SubscriptionAccessReasonEnum::TenantSuspended,
+            trialEndsAt: $this->trialEndsAt($tenant),
+            activeUntil: null,
+            hasPendingOrder: false,
+            suspensionReason: $tenant->suspension_reason,
         );
     }
 }

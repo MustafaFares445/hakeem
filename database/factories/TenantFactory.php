@@ -60,6 +60,10 @@ final class TenantFactory extends Factory
             'tenant_id' => $parent?->id,
             'trial_starts_at' => $trialStartsAt,
             'trial_ends_at' => $trialEndsAt,
+            'is_suspended' => $attributes['is_suspended'] ?? false,
+            'suspended_at' => $attributes['suspended_at'] ?? null,
+            'suspension_reason' => $attributes['suspension_reason'] ?? null,
+            'suspended_by_user_id' => $attributes['suspended_by_user_id'] ?? null,
             'created_at' => $createdAt,
             'updated_at' => $attributes['updated_at'] ?? now(),
         ]);

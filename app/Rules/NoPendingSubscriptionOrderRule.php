@@ -11,9 +11,16 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class NoPendingSubscriptionOrderRule implements ValidationRule
 {
+    public function __construct(private readonly ?string $tenantId) {}
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if ($this->tenantId === null) {
+            return;
+        }
+
         $hasPendingOrder = SubscriptionOrder::query()
+            ->where('tenant_id', $this->tenantId)
             ->where('status', SubscriptionOrderStatusEnum::Pending->value)
             ->exists();
 

@@ -125,6 +125,34 @@ it('fails order creation when pending order already exists', function (): void {
         ->assertJsonValidationErrors(['subscriptionPlanId']);
 });
 
+it('allows order creation when a different tenant has pending order', function (): void {
+    $plan = SubscriptionPlan::factory()->create([
+        'tenant_type_id' => $this->tenantType->id,
+        'is_active' => true,
+    ]);
+
+    $otherTenant = Tenant::factory()->create([
+        'tenant_type_id' => $this->tenantType->id,
+    ]);
+    $otherTenantUser = User::factory()->create([
+        'tenant_id' => $otherTenant->id,
+    ]);
+
+    SubscriptionOrder::factory()->create([
+        'tenant_id' => $otherTenant->id,
+        'subscription_plan_id' => $plan->id,
+        'created_by_user_id' => $otherTenantUser->id,
+        'status' => SubscriptionOrderStatusEnum::Pending->value,
+    ]);
+
+    $response = $this->post('/api/subscription-orders', [
+        'subscriptionPlanId' => $plan->id,
+        'transactionImage' => UploadedFile::fake()->image('proof.png'),
+    ], ['Accept' => 'application/json']);
+
+    $response->assertCreated();
+});
+
 it('fails order creation when plan does not match tenant type', function (): void {
     $otherTenantType = TenantType::factory()->create();
 
@@ -336,6 +364,66 @@ it('blocks protected app routes with 402 when subscription inactive', function (
     $response->assertStatus(402)
         ->assertJsonPath('subscriptionStatus.canUseApp', false)
         ->assertJsonPath('subscriptionStatus.reason', 'renewal_required');
+});
+
+it('blocks suspended tenants with suspension reason', function (): void {
+    $this->tenant->update([
+        'trial_ends_at' => now()->copy()->addMonth(),
+        'is_suspended' => true,
+        'suspension_reason' => 'Manual review pending',
+        'suspended_at' => now(),
+    ]);
+
+    $response = $this->getJson('/api/clinic');
+
+    $response->assertStatus(402)
+        ->assertJsonPath('subscriptionStatus.reason', 'tenant_suspended')
+        ->assertJsonPath('subscriptionStatus.suspensionReason', 'Manual review pending');
+});
+
+it('reactivating tenant removes subscription suspension block', function (): void {
+    $this->tenant->update([
+        'trial_ends_at' => now()->copy()->addMonth(),
+        'is_suspended' => true,
+        'suspension_reason' => 'Manual review pending',
+        'suspended_at' => now(),
+    ]);
+
+    $blocked = $this->getJson('/api/clinic');
+    $blocked->assertStatus(402)
+        ->assertJsonPath('subscriptionStatus.reason', 'tenant_suspended');
+
+    $this->tenant->update([
+        'is_suspended' => false,
+        'suspended_at' => null,
+        'suspension_reason' => null,
+    ]);
+
+    $plan = SubscriptionPlan::factory()->create([
+        'tenant_type_id' => $this->tenantType->id,
+        'duration_value' => 1,
+        'duration_unit' => 'month',
+        'is_lifetime' => false,
+    ]);
+
+    SubscriptionOrder::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'subscription_plan_id' => $plan->id,
+        'created_by_user_id' => $this->user->id,
+        'status' => SubscriptionOrderStatusEnum::Confirmed->value,
+        'starts_at' => now()->copy()->subDay(),
+        'ends_at' => now()->copy()->addMonth(),
+    ]);
+
+    tenancy()->end();
+
+    Sanctum::actingAs($this->user->fresh());
+
+    $status = $this->getJson('/api/subscription-status');
+
+    $status->assertOk();
+
+    expect($status->json('data.reason'))->not->toBe('tenant_suspended');
 });
 
 it('does not subscription block non tenant users', function (): void {

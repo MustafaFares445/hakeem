@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders\Permissions;
 
+use App\Enums\RoleEnum;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -24,7 +25,7 @@ final class FillerMaterialPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
         }
 
-        $adminRole = Role::where('name', 'admin')->first();
+        $adminRole = Role::where('name', RoleEnum::SystemAdmin->value)->first();
 
         if ($adminRole) {
             $adminRole->givePermissionTo($permissions);
