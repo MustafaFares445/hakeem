@@ -83,6 +83,9 @@ final class User extends Authenticatable implements FilamentUser, HasMedia, Must
     {
         return $panel->getId() === 'admin'
             && $this->tenant_id === null
-            && $this->hasRole(RoleEnum::SystemAdmin->value);
+            && $this->roles()
+                ->withoutGlobalScopes()
+                ->where('name', RoleEnum::SystemAdmin->value)
+                ->exists();
     }
 }
