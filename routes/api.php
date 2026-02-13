@@ -67,5 +67,7 @@ Route::middleware(['auth:sanctum', 'tenant.by.user'])->group(function () {
         Route::apiResource('/medical-record-treatments', MedicalRecordTreatmentController::class);
 
         Route::apiResource('media', MediaController::class)->only(['index', 'store', 'show', 'destroy']);
+        Route::get('media/{medium}/download', [MediaController::class, 'download']);
+        Route::get('media/{medium}/stream', [MediaController::class, 'stream']);
     });
 });
